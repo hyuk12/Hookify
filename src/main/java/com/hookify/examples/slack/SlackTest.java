@@ -11,13 +11,13 @@ import java.net.InetSocketAddress;
 public class SlackTest {
   public static void main(String[] args) throws IOException {
     // 환경 변수에서 Slack 봇 토큰 가져오기
-    String slackBotToken = "xoxb-8167736175520-8130413435511-GFMUHbnkGaqG5Ze2kOmFa1Z9";
-    if (slackBotToken == null || slackBotToken.isEmpty()) {
-      throw new IllegalStateException("SLACK_BOT_TOKEN 환경 변수가 설정되지 않았습니다.");
-    }
+
+//    if (slackBotToken == null || slackBotToken.isEmpty()) {
+//      throw new IllegalStateException("SLACK_BOT_TOKEN 환경 변수가 설정되지 않았습니다.");
+//    }
 
     // Slack 핸들러 초기화
-    SlackExtendedHandler slackExtendedHandler = new SlackExtendedHandler(slackBotToken);
+    SlackExtendedHandler slackExtendedHandler = new SlackExtendedHandler("slackBotToken");
 
     // HTTP 서버 생성
     HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
