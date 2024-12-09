@@ -35,7 +35,7 @@ Slack, GitHub, 결제 시스템(Stripe, PayPal) 등 다양한 서비스와 통�
 ```text
 MIT License
 
-Copyright (c) 2024 [Your Name]
+Copyright (c) 2024 ChoiHaeHyuk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
