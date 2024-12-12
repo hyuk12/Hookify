@@ -11,7 +11,7 @@ public class SlackWebhookRetryHandler {
 
   public void retry(Runnable task) {
     int attempts = 0;
-    while (attempts < retryPolicy.getMaxRetries()) {
+    while (attempts < retryPolicy.maxRetries()) {
       try {
         task.run();
         return;
@@ -19,7 +19,7 @@ public class SlackWebhookRetryHandler {
         attempts++;
         System.out.println("Retry attempt " + attempts + " failed");
         try {
-          Thread.sleep(retryPolicy.getRetryDelay());
+          Thread.sleep(retryPolicy.retryDelay());
         } catch (InterruptedException ignored) {
         }
       }
