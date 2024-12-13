@@ -22,7 +22,7 @@ public class GitHubWebhookTest {
     server.createContext("/github/webhook", exchange -> handleRequest(exchange, pipeline));
     server.start();
 
-    System.out.println("GitHub Webhook 서버가 8080 포트에서 실행 중...");
+    System.out.println("GitHub Webhook 서버가 8080 포트에서 실행 중..");
   }
 
   private static void handleRequest(HttpExchange exchange, WebhookPipeline pipeline) throws IOException {
