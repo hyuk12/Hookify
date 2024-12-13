@@ -1,0 +1,4 @@
+jdk:
+  - openjdk17
+gradle:
+  arguments: clean build -x test
