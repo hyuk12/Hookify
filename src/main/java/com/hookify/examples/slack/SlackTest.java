@@ -13,7 +13,7 @@ public class SlackTest {
 // 환경 변수에서 Slack 봇 토큰 가져오기
     String slackBotToken = System.getenv("SLACK_BOT_TOKEN");
     if (slackBotToken == null || slackBotToken.isEmpty()) {
-      throw new IllegalStateException("SLACK_BOT_TOKEN 환경 변수가 설정되지 않았습니다.");
+      throw new IllegalStateException("SLACK_BOT_TOKEN 환경 변수가 설정되지 않았습니다");
     }
 
     // Slack 핸들러 초기화
