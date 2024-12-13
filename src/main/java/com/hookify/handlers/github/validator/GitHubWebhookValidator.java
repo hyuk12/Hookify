@@ -3,9 +3,6 @@ package com.hookify.handlers.github.validator;
 import static com.hookify.util.StringUtils.bytesToHex;
 
 import com.hookify.core.WebhookValidator;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 

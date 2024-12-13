@@ -12,7 +12,7 @@ public class GitHubWebhookTest {
 
   public static void main(String[] args) throws IOException {
     // Secret 설정
-    String secret = "your_github_webhook_secret";
+    String secret = "ACM+ZoVPpAeRzEVTzYfKlxYChb7DroCT11uTXw23to8=";
 
     // GitHub WebhookPipeline 생성
     WebhookPipeline pipeline = GitHubWebhookPipeline.create(secret);
