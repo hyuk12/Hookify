@@ -18,7 +18,7 @@ public class WebhookProcessor {
     validators.put(event, validator);
   }
 
-  // 후속 작업(PostProcessor) 등록
+  // 후속 작업(PostProcessor)
   public void registerPostProcessor(String event, PostProcessor postProcessor) {
     postProcessors.put(event, postProcessor);
   }
