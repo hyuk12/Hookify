@@ -11,16 +11,32 @@ public class GitHubWebhookHandler implements WebhookHandler {
   @Override
   public void handle(String payload) {
     try {
-      GitHubWebhookPayload event = JsonUtils.fromJson(payload,
-          GitHubWebhookPayload.class);
+      GitHubWebhookPayload event = JsonUtils.fromJson(payload, GitHubWebhookPayload.class);
 
-      switch (event.getAction()) {
+      // 이벤트 타입 판단
+      String eventType = determineEventType(payload);
+
+      switch (eventType) {
         case "push" -> handlePushEvent(event);
         case "pull_request" -> handlePullRequestEvent(event);
-        default -> System.out.println("Unhandled event: " + event.getAction());
+        default -> System.out.println("Unhandled event type: " + eventType);
       }
     } catch (Exception e) {
       System.out.println("Failed to handle GitHub event: " + e.getMessage());
+    }
+  }
+
+  private String determineEventType(String payload) {
+    try {
+      // payload 내 특정 필드를 기반으로 이벤트 타입 판단
+      if (payload.contains("\"pull_request\":")) {
+        return "pull_request";
+      } else if (payload.contains("\"ref\":") && payload.contains("\"before\":")) {
+        return "push";
+      }
+      return "unknown";
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to determine event type: " + e.getMessage());
     }
   }
 
@@ -36,6 +52,11 @@ public class GitHubWebhookHandler implements WebhookHandler {
   }
 
   private void handlePullRequestEvent(GitHubWebhookPayload event) {
+    if (event.getPullRequest() == null) {
+      System.out.println("Pull request data is missing!");
+      return;
+    }
+
     String repositoryName = event.getRepository().getName();
     String action = event.getAction();
     String prTitle = event.getPullRequest().getTitle();
