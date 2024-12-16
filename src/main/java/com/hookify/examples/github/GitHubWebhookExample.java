@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-public class GitHubWebhookTest {
+public class GitHubWebhookExample {
 
   public static void main(String[] args) throws IOException {
     // Secret 설정

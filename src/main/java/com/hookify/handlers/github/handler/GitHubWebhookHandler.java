@@ -11,6 +11,9 @@ public class GitHubWebhookHandler implements WebhookHandler {
   @Override
   public void handle(String payload) {
     try {
+      // Pretty Print 형태로 로그 출력
+      System.out.println("Webhook Payload:\n" + JsonUtils.prettyPrint(payload));
+
       GitHubWebhookPayload event = JsonUtils.fromJson(payload, GitHubWebhookPayload.class);
 
       // 이벤트 타입 판단
