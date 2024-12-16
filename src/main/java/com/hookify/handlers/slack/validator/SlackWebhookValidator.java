@@ -2,7 +2,7 @@ package com.hookify.handlers.slack.validator;
 
 import static com.hookify.util.StringUtils.bytesToHex;
 
-import com.hookify.core.WebhookValidator;
+import com.hookify.core.validator.WebhookValidator;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;

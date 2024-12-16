@@ -1,8 +1,8 @@
 package com.hookify.core.pipe;
 
 import com.hookify.core.PostProcessor;
-import com.hookify.core.WebhookHandler;
-import com.hookify.core.WebhookValidator;
+import com.hookify.core.handler.WebhookHandler;
+import com.hookify.core.validator.WebhookValidator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

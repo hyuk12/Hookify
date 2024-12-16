@@ -1,6 +1,6 @@
 package com.hookify.handlers.slack;
 
-import com.hookify.core.WebhookHandler;
+import com.hookify.core.handler.WebhookHandler;
 import com.hookify.util.JsonUtils;
 import com.hookify.util.slack.SlackApiClient;
 

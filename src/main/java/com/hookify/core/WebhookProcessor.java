@@ -1,5 +1,7 @@
 package com.hookify.core;
 
+import com.hookify.core.handler.WebhookHandler;
+import com.hookify.core.validator.WebhookValidator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,4 +48,30 @@ public class WebhookProcessor {
       postProcessor.process(payload);
     }
   }
+
+  public void processWithRetry(String event, String signature, String timestamp, String payload, RetryPolicy retryPolicy) {
+    int attempts = 0;
+    while (attempts < retryPolicy.maxRetries()) {
+      try {
+        process(event, signature, timestamp, payload);
+        return;
+      } catch (Exception e) {
+        attempts++;
+        System.out.println("Retry attempt " + attempts + " for event: " + event);
+        try {
+          Thread.sleep(retryPolicy.retryDelay());
+        } catch (InterruptedException interruptedException) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException("Retry interrupted", interruptedException);
+        }
+      }
+    }
+    System.out.println("All retry attempts failed for event: " + event);
+  }
+
+  public void addCustomHandler(String event, WebhookHandler handler) {
+    handlers.put(event, handler);
+  }
+
+
 }

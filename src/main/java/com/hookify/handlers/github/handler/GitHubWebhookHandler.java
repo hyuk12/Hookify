@@ -1,9 +1,12 @@
 package com.hookify.handlers.github.handler;
 
-import com.hookify.core.WebhookHandler;
+import com.hookify.core.handler.WebhookHandler;
+import com.hookify.handlers.github.logger.GitHubWebhookLogger;
 import com.hookify.util.JsonUtils;
 
 public class GitHubWebhookHandler implements WebhookHandler {
+
+  private final GitHubWebhookLogger logger = new GitHubWebhookLogger();
 
   @Override
   public void handle(String payload) {
@@ -22,12 +25,25 @@ public class GitHubWebhookHandler implements WebhookHandler {
   }
 
   private void handlePushEvent(GitHubWebhookPayload event) {
-    System.out.println("Push event received for repository: " + event.getRepository().getName());
-    System.out.println("Pusher: " + event.getPusher().getName());
+    String repositoryName = event.getRepository().getName();
+    String pusherName = event.getPusher().getName();
+
+    // 로그 기록
+    logger.logPushEvent(repositoryName, pusherName, event.toString());
+
+    // 추가 로직
+    System.out.println("Push event processed for repository: " + repositoryName);
   }
 
   private void handlePullRequestEvent(GitHubWebhookPayload event) {
-    System.out.println("Pull request event received: " + event.getPullRequest().getTitle());
-    System.out.println("Action: " + event.getAction());
+    String repositoryName = event.getRepository().getName();
+    String action = event.getAction();
+    String prTitle = event.getPullRequest().getTitle();
+
+    // 로그 기록
+    logger.logPullRequestEvent(repositoryName, action, prTitle, event.toString());
+
+    // 추가 로직
+    System.out.println("Pull request processed for repository: " + repositoryName + ", PR Title: " + prTitle);
   }
 }
