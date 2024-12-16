@@ -1,6 +1,5 @@
 package com.hookify.handlers.github.logger;
 
-import com.hookify.core.logger.WebhookLogger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
