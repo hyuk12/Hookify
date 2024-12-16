@@ -31,7 +31,6 @@ public class GitHubWebhookTest {
       String payload = new String(requestBody);
       String signature = exchange.getRequestHeaders().getFirst("X-Hub-Signature-256");
       String event = exchange.getRequestHeaders().getFirst("X-GitHub-Event");
-      String timestamp = Long.toString(System.currentTimeMillis() / 1000); // 현재 타임스탬프
 
       System.out.println("Webhook 요청 수신:");
       System.out.println("Event: " + event);
@@ -39,7 +38,7 @@ public class GitHubWebhookTest {
       System.out.println("Payload: " + payload);
 
       try {
-        pipeline.execute(event, signature, timestamp, payload);
+        pipeline.execute(event, signature, null, payload); // 타임스탬프 제거
 
         // 성공 응답
         String response = "Webhook processed successfully.";

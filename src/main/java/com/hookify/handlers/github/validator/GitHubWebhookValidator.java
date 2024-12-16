@@ -17,17 +17,11 @@ public class GitHubWebhookValidator implements WebhookValidator {
   @Override
   public boolean validate(String signature, String timestamp, String payload) {
     try {
-      long requestTime = Long.parseLong(timestamp);
-      long currentTime = System.currentTimeMillis() / 1000;
-      if (Math.abs(currentTime - requestTime) > 300) { // 5분 이상 차이
-        System.out.println("Timestamp validation failed.");
-        return false;
-      }
-
-      String data = "sha256=" + timestamp + ":" + payload;
+      // GitHub Webhook에서 타임스탬프는 전달되지 않음
+      String data = "sha256=" + payload;
       Mac mac = Mac.getInstance(HMAC_ALGORITHM);
       mac.init(new SecretKeySpec(secret.getBytes(), HMAC_ALGORITHM));
-      String computedSignature = "sha256=" + bytesToHex(mac.doFinal(data.getBytes()));
+      String computedSignature = "sha256=" + bytesToHex(mac.doFinal(payload.getBytes()));
 
       if (!computedSignature.equals(signature)) {
         System.out.println("Signature validation failed.");
