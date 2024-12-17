@@ -25,9 +25,9 @@ public class GitHubExampleController {
   public ResponseEntity<String> handleGitHubWebhook(
       @RequestHeader("X-GitHub-Event") String eventType,
       @RequestHeader("X-Hub-Signature-256") String signature,
-      @RequestBody Request request) {
+      @RequestBody String payload) {
     try {
-      webhookPipeline.execute(eventType, signature, null, request.payload());
+      webhookPipeline.execute(eventType, signature, null, payload);
       return ResponseEntity.ok("Webhook processed successfully!");
     } catch (Exception e) {
       return ResponseEntity.badRequest().body("Webhook processing failed: " + e.getMessage());
