@@ -1,7 +1,11 @@
 package com.hookify.handlers.github.handler;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class GitHubWebhookPayload {
   private String action;
   private String ref;
@@ -334,5 +338,17 @@ public class GitHubWebhookPayload {
   public void setPullRequest(
       PullRequest pullRequest) {
     this.pullRequest = pullRequest;
+  }
+
+  @Override
+  public String toString() {
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      // JSON 직렬화
+      return mapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      // 변환 실패 시 기본 Object의 toString 반환
+      return super.toString();
+    }
   }
 }
