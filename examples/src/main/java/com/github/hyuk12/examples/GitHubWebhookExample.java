@@ -6,12 +6,14 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class GitHubWebhookExample {
 
+  private static final Logger logger = LoggerFactory.getLogger(GitHubWebhookExample.class);
   public static void main(String[] args) throws IOException {
+
     // Secret 설정
     String secret = "my-secret";
 
@@ -23,7 +25,7 @@ public class GitHubWebhookExample {
     server.createContext("/github/webhook", exchange -> handleRequest(exchange, pipeline));
     server.start();
 
-    log.info("GitHub Webhook 서버가 8080 포트에서 실행 중....");
+    logger.info("GitHub Webhook 서버가 8080 포트에서 실행 중....");
   }
 
   private static void handleRequest(HttpExchange exchange, WebhookPipeline pipeline) throws IOException {
@@ -33,10 +35,10 @@ public class GitHubWebhookExample {
       String signature = exchange.getRequestHeaders().getFirst("X-Hub-Signature-256");
       String eventType = exchange.getRequestHeaders().getFirst("X-GitHub-Event"); // 이벤트 타입 읽기
 
-      log.info("Webhook 요청 수신:");
-      log.info("Event: {}", eventType);
-      log.info("Signature: {}", signature);
-      log.info("Payload: {}", payload);
+      logger.info("Webhook 요청 수신:");
+      logger.info("Event: {}", eventType);
+      logger.info("Signature: {}", signature);
+      logger.info("Payload: {}", payload);
 
       try {
         pipeline.execute(eventType, signature, null, payload); // 이벤트 타입 전달
