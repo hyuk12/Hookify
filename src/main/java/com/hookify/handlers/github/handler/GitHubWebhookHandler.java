@@ -48,7 +48,7 @@ public class GitHubWebhookHandler implements WebhookHandler {
     String pusherName = event.getPusher().getName();
 
     // 로그 기록
-    logger.logPushEvent(repositoryName, pusherName, event.toString());
+    logger.logPushEvent(event);
 
     // 추가 로직
     System.out.println("Push event processed for repository: " + repositoryName);
@@ -65,7 +65,7 @@ public class GitHubWebhookHandler implements WebhookHandler {
     String prTitle = event.getPullRequest().getTitle();
 
     // 로그 기록
-    logger.logPullRequestEvent(repositoryName, action, prTitle, event.toString());
+    logger.logPullRequestEvent(event);
 
     // 추가 로직
     System.out.println("Pull request processed for repository: " + repositoryName + ", PR Title: " + prTitle);
