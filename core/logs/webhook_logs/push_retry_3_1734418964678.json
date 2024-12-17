@@ -1,0 +1,9 @@
+{
+  "payload" : {
+    "test" : "payload"
+  },
+  "errorMessage" : "Signature validation failed",
+  "eventType" : "push",
+  "retryAttempt" : 3,
+  "timestamp" : "2024-12-17T16:02:44.678678"
+}
