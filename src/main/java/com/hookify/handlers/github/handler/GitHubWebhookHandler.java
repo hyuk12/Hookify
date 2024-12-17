@@ -11,35 +11,22 @@ public class GitHubWebhookHandler implements WebhookHandler {
   @Override
   public void handle(String payload) {
     try {
-      // Pretty Print 형태로 로그 출력
       System.out.println("Webhook Payload:\n" + JsonUtils.prettyPrint(payload));
 
       GitHubWebhookPayload event = JsonUtils.fromJson(payload, GitHubWebhookPayload.class);
+      if (event == null || event.getRepository() == null) {
+        throw new IllegalArgumentException("Invalid or missing GitHub webhook payload.");
+      }
 
-      // 이벤트 타입 판단
-      String eventType = determineEventType(payload);
-
-      switch (eventType) {
-        case "push" -> handlePushEvent(event);
-        case "pull_request" -> handlePullRequestEvent(event);
-        default -> System.out.println("Unhandled event type: " + eventType);
+      if (event.getPullRequest() != null) {
+        handlePullRequestEvent(event);
+      } else if (event.getCommits() != null) {
+        handlePushEvent(event);
+      } else {
+        System.out.println("Unhandled event type.");
       }
     } catch (Exception e) {
       System.out.println("Failed to handle GitHub event: " + e.getMessage());
-    }
-  }
-
-  private String determineEventType(String payload) {
-    try {
-      // payload 내 특정 필드를 기반으로 이벤트 타입 판단
-      if (payload.contains("\"pull_request\":")) {
-        return "pull_request";
-      } else if (payload.contains("\"ref\":") && payload.contains("\"before\":")) {
-        return "push";
-      }
-      return "unknown";
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to determine event type: " + e.getMessage());
     }
   }
 
@@ -48,26 +35,21 @@ public class GitHubWebhookHandler implements WebhookHandler {
     String pusherName = event.getPusher().getName();
 
     // 로그 기록
-    logger.logPushEvent(event);
+    logger.logPushEvent(repositoryName, pusherName, event.getCommits());
 
-    // 추가 로직
-    System.out.println("Push event processed for repository: " + repositoryName);
+    // 콘솔 출력
+    System.out.println("Processed push event for repository: " + repositoryName);
   }
 
   private void handlePullRequestEvent(GitHubWebhookPayload event) {
-    if (event.getPullRequest() == null) {
-      System.out.println("Pull request data is missing!");
-      return;
-    }
-
     String repositoryName = event.getRepository().getName();
     String action = event.getAction();
     String prTitle = event.getPullRequest().getTitle();
 
     // 로그 기록
-    logger.logPullRequestEvent(event);
+    logger.logPullRequestEvent(repositoryName, action, prTitle);
 
-    // 추가 로직
-    System.out.println("Pull request processed for repository: " + repositoryName + ", PR Title: " + prTitle);
+    // 콘솔 출력
+    System.out.println("Processed pull request for repository: " + repositoryName + ", Action: " + action);
   }
 }
