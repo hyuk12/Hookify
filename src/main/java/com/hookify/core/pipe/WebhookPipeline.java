@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 public class WebhookPipeline {
   private final List<Consumer<WebhookContext>> steps = new ArrayList<>();
 
-  // WebhookContext 클래스 정의
   public static class WebhookContext {
     public final String event;
     public final String signature;
@@ -25,29 +24,21 @@ public class WebhookPipeline {
     }
   }
 
-  // 검증 단계 추가
   public WebhookPipeline validator(WebhookValidator validator) {
-    steps.add(context -> {
-      if (!validator.validate(context.signature, context.timestamp, context.payload)) {
-        throw new IllegalStateException("Validation failed for event: " + context.event);
-      }
-    });
+    steps.add(context -> validator.validate(context.signature, context.timestamp, context.payload));
     return this;
   }
 
-  // 이벤트 처리 핸들러 추가
   public WebhookPipeline handleEvent(WebhookHandler handler) {
     steps.add(context -> handler.handle(context.payload));
     return this;
   }
 
-  // 체인에 후속 작업(PostProcessor) 추가
   public WebhookPipeline postProcess(PostProcessor postProcessor) {
     steps.add(context -> postProcessor.process(context.payload));
     return this;
   }
 
-  // 파이프라인 실행
   public void execute(String event, String signature, String timestamp, String payload) {
     WebhookContext context = new WebhookContext(event, signature, timestamp, payload);
     for (Consumer<WebhookContext> step : steps) {
