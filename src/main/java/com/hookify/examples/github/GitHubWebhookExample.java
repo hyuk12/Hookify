@@ -30,32 +30,27 @@ public class GitHubWebhookExample {
       byte[] requestBody = exchange.getRequestBody().readAllBytes();
       String payload = new String(requestBody);
       String signature = exchange.getRequestHeaders().getFirst("X-Hub-Signature-256");
-      String event = exchange.getRequestHeaders().getFirst("X-GitHub-Event");
+      String eventType = exchange.getRequestHeaders().getFirst("X-GitHub-Event"); // 이벤트 타입 읽기
 
       System.out.println("Webhook 요청 수신:");
-      System.out.println("Event: " + event);
+      System.out.println("Event: " + eventType);
       System.out.println("Signature: " + signature);
       System.out.println("Payload: " + payload);
 
       try {
-        pipeline.execute(event, signature, null, payload); // 타임스탬프 제거
+        pipeline.execute(eventType, signature, null, payload); // 이벤트 타입 전달
 
-        // 성공 응답
         String response = "Webhook processed successfully.";
         exchange.sendResponseHeaders(200, response.length());
-        OutputStream os = exchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+        exchange.getResponseBody().write(response.getBytes());
       } catch (Exception e) {
-        // 실패 응답
         String response = "Webhook processing failed: " + e.getMessage();
         exchange.sendResponseHeaders(400, response.length());
-        OutputStream os = exchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+        exchange.getResponseBody().write(response.getBytes());
+      } finally {
+        exchange.getResponseBody().close();
       }
     } else {
-      // GET 요청 또는 기타 요청에 대한 응답 처리
       exchange.sendResponseHeaders(405, -1); // Method Not Allowed
     }
   }

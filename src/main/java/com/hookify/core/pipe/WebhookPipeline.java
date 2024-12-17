@@ -30,7 +30,7 @@ public class WebhookPipeline {
   }
 
   public WebhookPipeline handleEvent(WebhookHandler handler) {
-    steps.add(context -> handler.handle(context.payload));
+    steps.add(context -> handler.handle(context.event, context.payload)); // 이벤트 타입 추가
     return this;
   }
 
@@ -45,5 +45,4 @@ public class WebhookPipeline {
       step.accept(context);
     }
   }
-
 }
