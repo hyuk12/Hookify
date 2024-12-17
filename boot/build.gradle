@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
+    id 'maven-publish'
 }
 
 dependencies {
@@ -9,6 +10,14 @@ dependencies {
     implementation project(':core')
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true // 일반 JAR 작업 활성화
 }
 
 processResources {
