@@ -40,13 +40,19 @@ public class WebhookLogFileService {
     }
   }
 
-  // payload를 pretty print 형태로 반환하는 메서드
   private String prettyPrintPayload(String payload) {
     try {
+      // payload가 이중 문자열인지 확인하고 변환
       Object json = objectMapper.readValue(payload, Object.class);
+      if (json instanceof String) {
+        // 이중 문자열 처리
+        json = objectMapper.readValue((String) json, Object.class);
+      }
       return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
     } catch (IOException e) {
-      return payload; // 실패 시 원본 payload 반환
+      // 실패 시 원본 payload 반환
+      return payload;
     }
   }
+
 }
