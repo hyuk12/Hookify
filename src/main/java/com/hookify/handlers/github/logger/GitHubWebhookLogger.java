@@ -1,5 +1,6 @@
 package com.hookify.handlers.github.logger;
 
+import com.hookify.util.JsonUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,12 +18,16 @@ public class GitHubWebhookLogger {
     }
   }
 
-  public void logPushEvent(String repositoryName, String pusherName, String payload) {
-    logToFile("push.log", String.format("Repository: %s, Pusher: %s, Payload: %s%n", repositoryName, pusherName, payload));
+  public void logPushEvent(String repositoryName, String pusherName, Object payload) {
+    String payloadJson = JsonUtils.toJson(payload); // JSON으로 변환
+    logToFile("push.log", String.format("Repository: %s, Pusher: %s, Payload: %s%n",
+        repositoryName, pusherName, payloadJson));
   }
 
-  public void logPullRequestEvent(String repositoryName, String action, String prTitle, String payload) {
-    logToFile("pull_request.log", String.format("Repository: %s, Action: %s, PR Title: %s, Payload: %s%n", repositoryName, action, prTitle, payload));
+  public void logPullRequestEvent(String repositoryName, String action, String prTitle, Object payload) {
+    String payloadJson = JsonUtils.toJson(payload); // JSON으로 변환
+    logToFile("pull_request.log", String.format("Repository: %s, Action: %s, PR Title: %s, Payload: %s%n",
+        repositoryName, action, prTitle, payloadJson));
   }
 
   private void logToFile(String fileName, String logMessage) {
