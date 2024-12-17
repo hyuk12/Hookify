@@ -14,7 +14,7 @@ public class WebhookLogFileService {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public WebhookLogFileService() {
-    // ObjectMapper에 pretty print 설정 추가
+    // ObjectMapper 설정: Pretty Print 활성화
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
     File directory = new File(LOG_DIRECTORY);
@@ -26,7 +26,7 @@ public class WebhookLogFileService {
   public void log(String eventType, String payload, boolean success) {
     Map<String, Object> logData = new HashMap<>();
     logData.put("eventType", eventType);
-    logData.put("payload", prettyPrintPayload(payload));
+    logData.put("payload", prettyPrintPayload(payload)); // Pretty print payload
     logData.put("success", success);
     logData.put("timestamp", LocalDateTime.now().toString());
 
@@ -40,26 +40,19 @@ public class WebhookLogFileService {
     }
   }
 
+  // 이중 JSON 문자열을 처리하는 메서드
   private String prettyPrintPayload(String payload) {
     try {
-      // JSON 파싱이 실패할 때까지 반복해서 이중 문자열을 처리
-      String result = payload;
+      String cleanedPayload = payload;
       while (true) {
-        try {
-          // 현재 문자열을 JSON 객체로 파싱
-          Object json = objectMapper.readValue(result, Object.class);
-          // 파싱된 JSON 객체를 다시 예쁘게 출력
-          result = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-        } catch (IOException e) {
-          // 더 이상 JSON이 아니면 최종 result 반환
-          return result;
-        }
+        // JSON 형식으로 파싱 시도
+        Object json = objectMapper.readValue(cleanedPayload, Object.class);
+        // 파싱이 성공하면 Pretty Print로 변환
+        cleanedPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
       }
-    } catch (Exception e) {
-      // 실패 시 원본 payload 반환
+    } catch (IOException e) {
+      // 파싱 실패하면 더 이상 이중 JSON이 아니라고 판단하고 반환
       return payload;
     }
   }
-
-
 }
