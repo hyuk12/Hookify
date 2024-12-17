@@ -40,19 +40,27 @@ public class WebhookLogFileService {
     }
   }
 
-  // 이중 JSON 문자열을 처리하는 메서드
   private String prettyPrintPayload(String payload) {
     try {
-      String cleanedPayload = payload;
-      while (true) {
-        // JSON 형식으로 파싱 시도
-        Object json = objectMapper.readValue(cleanedPayload, Object.class);
-        // 파싱이 성공하면 Pretty Print로 변환
-        cleanedPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+      // 첫 번째 파싱 시도
+      Object json = objectMapper.readValue(payload, Object.class);
+
+      // 파싱된 JSON을 Pretty Print로 변환
+      String prettyPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+
+      // 두 번째 파싱 시도 (이중 JSON 검사)
+      if (prettyPayload.startsWith("\"") && prettyPayload.endsWith("\"")) {
+        // 다시 한 번 JSON으로 파싱
+        String unescapedPayload = objectMapper.readValue(prettyPayload, String.class);
+        Object nestedJson = objectMapper.readValue(unescapedPayload, Object.class);
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(nestedJson);
       }
+
+      return prettyPayload;
     } catch (IOException e) {
-      // 파싱 실패하면 더 이상 이중 JSON이 아니라고 판단하고 반환
+      // JSON 파싱 실패 시 원본 반환
       return payload;
     }
   }
+
 }
