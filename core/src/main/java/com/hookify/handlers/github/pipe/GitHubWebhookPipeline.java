@@ -19,7 +19,7 @@ public class GitHubWebhookPipeline {
 
     return new WebhookPipeline()
         .validator((signature, timestamp, payload) -> {
-          retryManager.retry(() -> {
+          retryManager.retry("github", payload, () -> {
             if (!validator.validate(signature, timestamp, payload)) {
               throw new IllegalStateException("Signature validation failed");
             }
