@@ -1,7 +1,17 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'jacoco'
 }
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+check.dependsOn jacocoTestReport
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')

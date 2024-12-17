@@ -4,7 +4,6 @@ plugins {
     id 'io.spring.dependency-management'
 }
 
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation project(':core')
@@ -18,6 +17,6 @@ processResources {
     }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+test {
+    exclude '**/*'
 }

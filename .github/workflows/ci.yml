@@ -1,0 +1,68 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:  # PR 발생 시 테스트 실행
+    branches:
+      - main
+  push:  # main 브랜치에 push 시 릴리즈 진행
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set Up Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Run Tests
+        run: ./gradlew test
+
+  release:
+    name: Release and Publish
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set Up Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Increment Version
+        id: version
+        run: |
+          CURRENT_VERSION=$(cat version.txt)
+          IFS='.' read -r -a version_parts <<< "$CURRENT_VERSION"
+          PATCH=$((version_parts[2] + 1))
+          NEW_VERSION="${version_parts[0]}.${version_parts[1]}.$PATCH"
+          echo $NEW_VERSION > version.txt
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
+          git config --global user.name "${{ secrets.GIT_USER_NAME }}"
+          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
+          git add version.txt
+          git commit -m "ci: Bump version to $NEW_VERSION"
+          git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+          git push origin main --tags
+
+      - name: Publish to JitPack
+        run: ./gradlew publish

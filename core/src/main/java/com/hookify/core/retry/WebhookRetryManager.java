@@ -9,37 +9,26 @@ import java.util.concurrent.TimeUnit;
 public class WebhookRetryManager {
   private static final int MAX_RETRIES = 3; // 최대 재시도 횟수
   private static final long INITIAL_DELAY = 2; // 초기 지연 시간 (초)
-  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-  public boolean retry(Runnable validationTask) {
-    CompletableFuture<Boolean> retryResult = new CompletableFuture<>();
-
-    retryTask(validationTask, 1, retryResult);
-
-    try {
-      return retryResult.get(); // 최종 결과 반환
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException("Validation retry process interrupted", e);
-    }
-  }
-
-  private void retryTask(Runnable task, int attempt, CompletableFuture<Boolean> result) {
-    if (attempt > MAX_RETRIES) {
-      result.complete(false);
-      return;
-    }
-
-    long delay = INITIAL_DELAY * (1L << (attempt - 1)); // 지수 백오프 적용
-    System.out.println("Validation retry attempt " + attempt + " in " + delay + " seconds");
-
-    scheduler.schedule(() -> {
+  public void retry(Runnable validationTask) {
+    for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        task.run();
-        result.complete(true);
+        validationTask.run();
+        return; // 성공 시 메서드 종료
       } catch (Exception e) {
         System.out.println("Validation attempt " + attempt + " failed: " + e.getMessage());
-        retryTask(task, attempt + 1, result);
+        if (attempt == MAX_RETRIES) {
+          throw new IllegalStateException("Validation failed after " + MAX_RETRIES + " retries", e);
+        }
+        try {
+          long delay = INITIAL_DELAY * (1L << (attempt - 1)); // 지수 백오프 적용
+          System.out.println("Retrying in " + delay + " seconds...");
+          Thread.sleep(delay * 1000); // 딜레이 적용
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException("Retry process interrupted", ie);
+        }
       }
-    }, delay, TimeUnit.SECONDS);
+    }
   }
 }

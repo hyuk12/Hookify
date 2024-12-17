@@ -19,17 +19,14 @@ public class GitHubWebhookPipeline {
 
     return new WebhookPipeline()
         .validator((signature, timestamp, payload) -> {
-          boolean success = retryManager.retry(() -> {
+          retryManager.retry(() -> {
             if (!validator.validate(signature, timestamp, payload)) {
-              throw new IllegalStateException("Secret validation failed");
+              throw new IllegalStateException("Signature validation failed");
             }
           });
-          if (!success) {
-            throw new IllegalStateException("Secret validation failed after retries");
-          }
           return true;
         })
-        .handleEvent(handler)        // 이벤트 타입 처리
-        .postProcess(postProcessor); // 후속 작업
+        .handleEvent(handler)
+        .postProcess(postProcessor);
   }
 }
