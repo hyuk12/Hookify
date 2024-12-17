@@ -18,9 +18,9 @@ public class GitHubWebhookPipeline {
     PostProcessor postProcessor = new GitHubProcessor();
 
     return new WebhookPipeline()
-        .validator((signature, timestamp, payload) -> {
-          retryManager.retry("github", payload, () -> {
-            if (!validator.validate(signature, timestamp, payload)) {
+        .validator((eventType, signature, timestamp, payload) -> {
+          retryManager.retry(eventType, payload, () -> {
+            if (!validator.validate(eventType, signature, timestamp, payload)) {
               throw new IllegalStateException("Signature validation failed");
             }
           });

@@ -2,7 +2,7 @@
   "payload" : {
     "test" : "payload"
   },
-  "success" : true,
   "eventType" : "push",
-  "timestamp" : "2024-12-17T14:31:07.308895"
+  "status" : "success",
+  "timestamp" : "2024-12-17T15:55:12.343401"
 }

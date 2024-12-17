@@ -5,6 +5,7 @@ import com.hookify.core.handler.WebhookHandler;
 import com.hookify.core.validator.WebhookValidator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WebhookPipeline {
@@ -25,7 +26,7 @@ public class WebhookPipeline {
   }
 
   public WebhookPipeline validator(WebhookValidator validator) {
-    steps.add(context -> validator.validate(context.signature, context.timestamp, context.payload));
+    steps.add(context -> validator.validate(context.event, context.signature, context.timestamp, context.payload));
     return this;
   }
 
@@ -45,4 +46,5 @@ public class WebhookPipeline {
       step.accept(context);
     }
   }
+
 }

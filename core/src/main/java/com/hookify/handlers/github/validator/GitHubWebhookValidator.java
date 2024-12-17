@@ -15,7 +15,7 @@ public class GitHubWebhookValidator implements WebhookValidator {
   }
 
   @Override
-  public boolean validate(String signature, String timestamp, String payload) {
+  public boolean validate(String eventType, String signature, String timestamp, String payload) {
     try {
       if (signature == null || payload == null) {
         throw new IllegalArgumentException("Signature or payload cannot be null");

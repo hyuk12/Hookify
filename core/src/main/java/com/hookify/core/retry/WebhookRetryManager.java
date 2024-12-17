@@ -13,22 +13,30 @@ public class WebhookRetryManager {
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final WebhookLogFileService logService = new WebhookLogFileService();
 
-  public boolean retry(String eventType, String payload, Runnable validationTask) {
-    CompletableFuture<Boolean> retryResult = new CompletableFuture<>();
-    retryTask(eventType, payload, validationTask, 1, retryResult);
-
-    try {
-      return retryResult.get(); // 최종 결과 반환
-    } catch (InterruptedException | ExecutionException e) {
-      logService.log(eventType, payload, false); // 예외 발생 시 실패 로그 기록
-      throw new RuntimeException("Validation retry process interrupted", e);
+  public void retry(String eventType, String payload, Runnable validationTask) {
+    for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        validationTask.run();
+        return; // 성공하면 리턴
+      } catch (Exception e) {
+        logService.logRetry(eventType, payload, attempt, e); // 실패 시 재시도 로그
+        if (attempt == MAX_RETRIES) {
+          throw new IllegalStateException("Validation failed after retries", e);
+        }
+        try {
+          Thread.sleep((long) Math.pow(2, attempt) * 1000); // 지수 백오프
+        } catch (InterruptedException interruptedException) {
+          Thread.currentThread().interrupt();
+          logService.logRetry(eventType, payload, attempt, e); // 실패한 경우 로그 기록
+          throw new IllegalStateException("Retry interrupted", interruptedException);
+        }
+      }
     }
   }
 
-  private void retryTask(String eventType, String payload, Runnable task, int attempt, CompletableFuture<Boolean> result) {
+  private void retryTask(String eventType, String payload, Runnable task, int attempt, CompletableFuture<Void> result) {
     if (attempt > MAX_RETRIES) {
-      logService.log(eventType, payload, false); // 최대 재시도 횟수 초과 시 실패 로그 기록
-      result.complete(false);
+      result.completeExceptionally(new IllegalStateException("Validation failed after retries"));
       return;
     }
 
@@ -38,9 +46,10 @@ public class WebhookRetryManager {
     scheduler.schedule(() -> {
       try {
         task.run();
-        result.complete(true);
+        result.complete(null); // 성공 시 완료
       } catch (Exception e) {
         System.out.println("Validation attempt " + attempt + " failed: " + e.getMessage());
+        logService.logRetry(eventType, payload, attempt, e); // 실패한 경우 로그 기록
         retryTask(eventType, payload, task, attempt + 1, result);
       }
     }, delay, TimeUnit.SECONDS);

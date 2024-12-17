@@ -21,14 +21,43 @@ public class WebhookLogFileService {
     }
   }
 
+  /**
+   * 일반 이벤트 로깅 (성공 또는 실패)
+   */
   public void log(String eventType, String payload, boolean success) {
+    String status = success ? "success" : "fail";
+    String fileName = LOG_DIRECTORY + eventType + "_" + status + "_" + System.currentTimeMillis() + ".json";
+
+    saveLog(fileName, eventType, payload, status);
+  }
+
+  /**
+   * 재시도 이벤트 로깅
+   */
+  public void logRetry(String eventType, String payload, int attempt, Exception exception) {
+    String fileName = LOG_DIRECTORY + eventType + "_retry_" + attempt + "_" + System.currentTimeMillis() + ".json";
+
     Map<String, Object> logData = new HashMap<>();
     logData.put("eventType", eventType);
     logData.put("payload", parseNestedJson(payload));
-    logData.put("success", success);
+    logData.put("retryAttempt", attempt);
+    logData.put("errorMessage", exception.getMessage());
     logData.put("timestamp", LocalDateTime.now().toString());
 
-    String fileName = LOG_DIRECTORY + eventType + "_" + System.currentTimeMillis() + ".json";
+    try (FileWriter writer = new FileWriter(fileName)) {
+      objectMapper.writeValue(writer, logData);
+      System.out.println("Retry Log saved to: " + fileName);
+    } catch (IOException e) {
+      System.out.println("Failed to save retry log: " + e.getMessage());
+    }
+  }
+
+  private void saveLog(String fileName, String eventType, String payload, String status) {
+    Map<String, Object> logData = new HashMap<>();
+    logData.put("eventType", eventType);
+    logData.put("payload", parseNestedJson(payload));
+    logData.put("status", status);
+    logData.put("timestamp", LocalDateTime.now().toString());
 
     try (FileWriter writer = new FileWriter(fileName)) {
       objectMapper.writeValue(writer, logData);
@@ -40,18 +69,15 @@ public class WebhookLogFileService {
 
   private Object parseNestedJson(String payload) {
     try {
-      // 1단계: payload를 JSON 객체로 파싱
       Object json = objectMapper.readValue(payload, Object.class);
-
-      // 2단계: 이중 JSON인지 확인
       if (json instanceof String) {
         String nestedJson = (String) json;
-        return objectMapper.readValue(nestedJson, Object.class); // 이중 JSON 파싱
+        return objectMapper.readValue(nestedJson, Object.class);
       }
-      return json; // 이미 파싱된 JSON 반환
+      return json;
     } catch (IOException e) {
       System.out.println("Failed to parse nested JSON: " + e.getMessage());
-      return payload; // 파싱 실패 시 원본 반환
+      return payload;
     }
   }
 }
