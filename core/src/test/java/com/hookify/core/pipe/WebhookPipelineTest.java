@@ -8,6 +8,9 @@ import static org.mockito.Mockito.verify;
 
 import com.hookify.handlers.github.pipe.GitHubWebhookPipeline;
 import com.hookify.util.SignatureUtils;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.Test;
 
 class WebhookPipelineTest {
@@ -30,15 +33,32 @@ class WebhookPipelineTest {
     assertTrue(exception.getMessage().contains("Validation failed after"));
   }
 
+  private String generateHmacSHA256(String data, String secret) throws Exception {
+    Mac hmac = Mac.getInstance("HmacSHA256");
+    SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    hmac.init(secretKeySpec);
+    byte[] hash = hmac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+
+    StringBuilder hexString = new StringBuilder();
+    for (byte b : hash) {
+      String hex = Integer.toHexString(0xff & b);
+      if (hex.length() == 1) hexString.append('0');
+      hexString.append(hex);
+    }
+    return "sha256=" + hexString.toString();
+  }
+
   @Test
-  void testWebhookPipelineExecution_withValidSignature() {
+  void testWebhookPipelineExecution_withValidSignature() throws Exception {
+    // Arrange
     String secret = "test-secret";
-    String validSignature = "sha256=" + secret;
     String payload = "{ \"test\": \"payload\" }";
+    String validSignature = generateHmacSHA256(payload, secret); // 올바른 서명 생성
 
     WebhookPipeline pipeline = GitHubWebhookPipeline.create(secret);
     String eventType = "push";
 
+    // Act & Assert
     assertDoesNotThrow(() -> pipeline.execute(eventType, validSignature, null, payload));
   }
 

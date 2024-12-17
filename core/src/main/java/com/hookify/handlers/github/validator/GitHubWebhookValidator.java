@@ -17,24 +17,27 @@ public class GitHubWebhookValidator implements WebhookValidator {
 
   @Override
   public boolean validate(String eventType, String signature, String timestamp, String payload) {
-    try {
-      if (signature == null || payload == null) {
-        throw new IllegalArgumentException("Signature or payload cannot be null");
-      }
+    if (signature == null || payload == null) {
+      System.out.println("Signature or payload is null");
+      return false; // 검증 실패 시 false 반환
+    }
 
+    try {
       // HMAC-SHA256 해시 생성
       String computedHash = "sha256=" + generateHmacSHA256(payload, secret);
 
       // 입력받은 시그니처와 비교
-      if (!computedHash.equals(signature)) {
-        throw new IllegalStateException("Signature validation failed");
+      boolean isValid = computedHash.equals(signature);
+      if (!isValid) {
+        System.out.println("Signature validation failed");
       }
-
-      return true; // 검증 성공
+      return isValid; // 검증 결과 반환
     } catch (Exception e) {
-      System.out.println("Signature validation failed: " + e.getMessage());
+      System.out.println("Signature validation error: " + e.getMessage());
+      return false; // 예외 발생 시 false 반환
     }
   }
+
 
   private String generateHmacSHA256(String data, String key) throws Exception {
     Mac hmac = Mac.getInstance(HMAC_ALGORITHM);
