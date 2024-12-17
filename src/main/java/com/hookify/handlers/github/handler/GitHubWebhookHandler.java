@@ -2,7 +2,6 @@ package com.hookify.handlers.github.handler;
 
 import com.hookify.core.handler.WebhookHandler;
 import com.hookify.core.logger.WebhookLogFileService;
-import com.hookify.handlers.github.logger.GitHubWebhookLogger;
 import com.hookify.util.JsonUtils;
 
 public class GitHubWebhookHandler implements WebhookHandler {
