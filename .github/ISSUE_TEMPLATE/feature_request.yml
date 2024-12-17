@@ -1,0 +1,31 @@
+name: 🚀 Feature Request
+description: 새로운 기능을 요청할 때 사용하세요
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 새로운 기능 요청
+        새로운 기능에 대해 간략하게 설명해주세요.
+  - type: textarea
+    id: description
+    attributes:
+      label: 기능 설명
+      description: 제안하고 싶은 기능을 자세히 설명해주세요.
+      placeholder: 여기에 기능 설명을 작성해주세요
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: 사용 사례
+      description: 해당 기능이 왜 필요한지, 어떤 문제를 해결할 수 있는지 설명해주세요.
+      placeholder: 여기에 작성해주세요
+    validations:
+      required: true
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 추가 정보
+      description: 기능과 관련된 추가 정보를 제공해주세요 (옵션).
