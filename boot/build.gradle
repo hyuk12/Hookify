@@ -18,6 +18,7 @@ tasks.named('bootJar') {
 
 tasks.named('jar') {
     enabled = true // 일반 JAR 작업 활성화
+    archiveClassifier = ''  // 메인 JAR로 설정
 }
 
 publishing {
@@ -27,6 +28,11 @@ publishing {
             artifactId = 'boot' // 모듈별 artifactId 지정
         }
     }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 processResources {
