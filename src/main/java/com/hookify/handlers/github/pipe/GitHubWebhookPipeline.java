@@ -28,8 +28,8 @@ public class GitHubWebhookPipeline {
             throw new IllegalStateException("Secret validation failed after retries");
           }
           return true;
-        })  // Secret 검증 및 재시도
-        .handleEvent(handler)       // 이벤트 처리
+        })
+        .handleEvent(handler)        // 이벤트 타입 처리
         .postProcess(postProcessor); // 후속 작업
   }
 }
