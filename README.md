@@ -83,7 +83,7 @@ dependencies {
   - Webhook Controller
     ```java
       @RestController
-      @RequestMapping("/webhook")
+      @RequestMapping("/github")
       public class WebhookController {
           private final WebhookPipeline pipeline;
       
@@ -91,7 +91,7 @@ dependencies {
               this.pipeline = pipeline;
           }
       
-          @PostMapping("/github")
+          @PostMapping("/webhook")
           public ResponseEntity<String> handleGitHubWebhook(
               @RequestHeader("X-GitHub-Event") String eventType,
               @RequestHeader("X-Hub-Signature-256") String signature,
