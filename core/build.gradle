@@ -13,6 +13,15 @@ jacocoTestReport {
 
 check.dependsOn jacocoTestReport
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'core' // 모듈별 artifactId 지정
+        }
+    }
+}
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
