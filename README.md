@@ -17,11 +17,91 @@ Slack, GitHub, 결제 시스템(Stripe, PayPal) 등 다양한 서비스와 통�
 ---
 
 ## 📦 설치 방법
+#### 1. Gradle 설치 예제
+
+```gradle
+dependencyResolutionManagement {
+		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+		repositories {
+			mavenCentral()
+			maven { url 'https://jitpack.io' }
+		}
+	}
+
+dependencies {
+    implementation 'com.github.hyuk12:Hookify:Tag'
+}
+```
+
+#### 2. Maven 설치 예제
+```xml
+<repositories>
+  <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.hyuk12</groupId>
+    <artifactId>Hookify</artifactId>
+    <version>Tag</version>
+</dependency>
+```
 
 ---
 
 ## 🚀 사용 방법
 
+### 1. 순수 Java 사용 예제
+- Webhook 요청 검증과 로깅 기능을 사용하는 예제
+
+  ```java
+  public class HookifyExample {
+    public static void main(String[] args) {
+        String secret = "your-webhook-secret";
+        String eventType = "push";
+        String signature = "sha256=valid-signature";
+        String payload = "{ \"ref\": \"refs/heads/main\" }";
+
+        WebhookPipeline pipeline = GitHubWebhookPipeline.create(secret);
+
+        try {
+            pipeline.execute(eventType, signature, null, payload);
+            System.out.println("Webhook successfully processed!");
+        } catch (Exception e) {
+            System.err.println("Failed to process webhook: " + e.getMessage());
+        }
+    }
+  ```
+
+### 2. Spring Boot 사용 예제
+  - `application.properties` 설정
+    ```yml
+      hookify.webhook.secret=your-webhook-secret
+    ```
+  - Webhook Controller
+    ```java
+      @RestController
+      @RequestMapping("/webhook")
+      public class WebhookController {
+          private final WebhookPipeline pipeline;
+      
+          public WebhookController(WebhookPipeline pipeline) {
+              this.pipeline = pipeline;
+          }
+      
+          @PostMapping("/github")
+          public ResponseEntity<String> handleGitHubWebhook(
+              @RequestHeader("X-GitHub-Event") String eventType,
+              @RequestHeader("X-Hub-Signature-256") String signature,
+              @RequestBody String payload) {
+      
+              pipeline.execute(eventType, signature, null, payload);
+              return ResponseEntity.ok("Webhook processed successfully!");
+          }
+      }
+    ```
 ---
 
 ## 🎥 데모 (추후 추가)
