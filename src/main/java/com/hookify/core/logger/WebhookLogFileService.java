@@ -42,17 +42,24 @@ public class WebhookLogFileService {
 
   private String prettyPrintPayload(String payload) {
     try {
-      // payload가 이중 문자열인지 확인하고 변환
-      Object json = objectMapper.readValue(payload, Object.class);
-      if (json instanceof String) {
-        // 이중 문자열 처리
-        json = objectMapper.readValue((String) json, Object.class);
+      // JSON 파싱이 실패할 때까지 반복해서 이중 문자열을 처리
+      String result = payload;
+      while (true) {
+        try {
+          // 현재 문자열을 JSON 객체로 파싱
+          Object json = objectMapper.readValue(result, Object.class);
+          // 파싱된 JSON 객체를 다시 예쁘게 출력
+          result = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        } catch (IOException e) {
+          // 더 이상 JSON이 아니면 최종 result 반환
+          return result;
+        }
       }
-      return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-    } catch (IOException e) {
+    } catch (Exception e) {
       // 실패 시 원본 payload 반환
       return payload;
     }
   }
+
 
 }
