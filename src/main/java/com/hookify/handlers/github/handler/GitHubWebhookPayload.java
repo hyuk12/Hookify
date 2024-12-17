@@ -1,6 +1,7 @@
 package com.hookify.handlers.github.handler;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -16,6 +17,7 @@ public class GitHubWebhookPayload {
   private Sender sender;
   private List<Commit> commits;
   private Commit headCommit;
+  @JsonProperty("pull_request")
   private PullRequest pullRequest;
 
   public static class Repository {
@@ -229,8 +231,11 @@ public class GitHubWebhookPayload {
   }
 
   public static class PullRequest {
+    @JsonProperty("title")
     private String title;
+    @JsonProperty("body")
     private String body;
+    @JsonProperty("state")
     private String state;
 
     public String getTitle() {
