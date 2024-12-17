@@ -40,7 +40,7 @@ public class GitHubWebhookExample {
       try {
         pipeline.execute(eventType, signature, null, payload); // 이벤트 타입 전달
 
-        String response = "Webhook processed successfully.";
+        String response = "Webhook processed successfully";
         exchange.sendResponseHeaders(200, response.length());
         exchange.getResponseBody().write(response.getBytes());
       } catch (Exception e) {
