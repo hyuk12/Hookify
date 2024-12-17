@@ -9,6 +9,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation project(':boot')
     implementation project(':core')
+    implementation 'org.projectlombok:lombok'
 }
 
 test {

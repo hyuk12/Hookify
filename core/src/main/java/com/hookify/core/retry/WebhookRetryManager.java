@@ -6,12 +6,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebhookRetryManager {
   private static final int MAX_RETRIES = 3; // 최대 재시도 횟수
   private static final long INITIAL_DELAY = 2; // 초기 지연 시간 (초)
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final WebhookLogFileService logService = new WebhookLogFileService();
+  private static final Logger logger = LoggerFactory.getLogger(WebhookRetryManager.class);
 
   public void retry(String eventType, String payload, Runnable validationTask) {
     for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -41,14 +44,14 @@ public class WebhookRetryManager {
     }
 
     long delay = INITIAL_DELAY * (1L << (attempt - 1)); // 지수 백오프 적용
-    System.out.println("Validation retry attempt " + attempt + " in " + delay + " seconds");
+    logger.info("Validation retry attempt: {} in delay: {} seconds", attempt, delay);
 
     scheduler.schedule(() -> {
       try {
         task.run();
         result.complete(null); // 성공 시 완료
       } catch (Exception e) {
-        System.out.println("Validation attempt " + attempt + " failed: " + e.getMessage());
+        logger.error("Validation attempt {} failed: {}", attempt, e.getMessage());
         logService.logRetry(eventType, payload, attempt, e); // 실패한 경우 로그 기록
         retryTask(eventType, payload, task, attempt + 1, result);
       }

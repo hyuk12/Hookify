@@ -2,16 +2,21 @@ package com.hookify.core.logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.hookify.core.enums.EventType;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import jdk.jfr.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebhookLogFileService {
   private static final String LOG_DIRECTORY = "logs/webhook_logs/";
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final Logger logger = LoggerFactory.getLogger(WebhookLogFileService.class);
 
   public WebhookLogFileService() {
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Pretty print 활성화
@@ -21,14 +26,14 @@ public class WebhookLogFileService {
     }
   }
 
-  /**
-   * 일반 이벤트 로깅 (성공 또는 실패)
-   */
-  public void log(String eventType, String payload, boolean success) {
-    String status = success ? "success" : "fail";
-    String fileName = LOG_DIRECTORY + eventType + "_" + status + "_" + System.currentTimeMillis() + ".json";
+  public void successLog(String eventType, String payload) {
+    String fileName = LOG_DIRECTORY + eventType + "_" + EventType.SUCCESS + "_" + System.currentTimeMillis() + ".json";
+    saveLog(fileName, eventType, payload, String.valueOf(EventType.SUCCESS));
+  }
 
-    saveLog(fileName, eventType, payload, status);
+  public void failedLog(String eventType, String payload) {
+    String fileName = LOG_DIRECTORY + eventType + "_" + EventType.FAILED + "_" + System.currentTimeMillis() + ".json";
+    saveLog(fileName, eventType, payload, String.valueOf(EventType.FAILED));
   }
 
   /**
@@ -46,37 +51,36 @@ public class WebhookLogFileService {
 
     try (FileWriter writer = new FileWriter(fileName)) {
       objectMapper.writeValue(writer, logData);
-      System.out.println("Retry Log saved to: " + fileName);
+      logger.info("Retry Log saved to: {}", fileName);
     } catch (IOException e) {
-      System.out.println("Failed to save retry log: " + e.getMessage());
+      logger.error("Failed to save retry log: {}", e.getMessage());
     }
   }
 
   private void saveLog(String fileName, String eventType, String payload, String status) {
     Map<String, Object> logData = new HashMap<>();
     logData.put("eventType", eventType);
-    logData.put("payload", parseNestedJson(payload));
+    logData.put("payload", payload);
     logData.put("status", status);
     logData.put("timestamp", LocalDateTime.now().toString());
 
     try (FileWriter writer = new FileWriter(fileName)) {
       objectMapper.writeValue(writer, logData);
-      System.out.println("Log saved to: " + fileName);
+      logger.info("Retry Log saved to: {}", fileName);
     } catch (IOException e) {
-      System.out.println("Failed to save log: " + e.getMessage());
+      logger.error("Failed to save retry log: {}", e.getMessage());
     }
   }
 
   private Object parseNestedJson(String payload) {
     try {
       Object json = objectMapper.readValue(payload, Object.class);
-      if (json instanceof String) {
-        String nestedJson = (String) json;
+      if (json instanceof String nestedJson) {
         return objectMapper.readValue(nestedJson, Object.class);
       }
       return json;
     } catch (IOException e) {
-      System.out.println("Failed to parse nested JSON: " + e.getMessage());
+      logger.error("Failed to parse nested JSON: {}", e.getMessage());
       return payload;
     }
   }

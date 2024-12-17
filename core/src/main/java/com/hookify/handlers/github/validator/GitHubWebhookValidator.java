@@ -3,13 +3,18 @@ package com.hookify.handlers.github.validator;
 import static com.hookify.util.StringUtils.bytesToHex;
 
 import com.hookify.core.validator.WebhookValidator;
+import com.hookify.handlers.github.processor.GitHubProcessor;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GitHubWebhookValidator implements WebhookValidator {
   private static final String HMAC_ALGORITHM = "HmacSHA256";
   private final String secret;
+  private static final Logger logger = LoggerFactory.getLogger(GitHubWebhookValidator.class);
 
   public GitHubWebhookValidator(String secret) {
     this.secret = secret;
@@ -17,8 +22,8 @@ public class GitHubWebhookValidator implements WebhookValidator {
 
   @Override
   public boolean validate(String eventType, String signature, String timestamp, String payload) {
-    if (signature == null || payload == null) {
-      System.out.println("Signature or payload is null");
+    if (Objects.isNull(signature) || Objects.isNull(payload)) {
+      logger.warn("Signature or payload is null");
       return false; // 검증 실패 시 false 반환
     }
 
@@ -29,11 +34,11 @@ public class GitHubWebhookValidator implements WebhookValidator {
       // 입력받은 시그니처와 비교
       boolean isValid = computedHash.equals(signature);
       if (!isValid) {
-        System.out.println("Signature validation failed");
+        logger.warn("Signature validation failed");
       }
       return isValid; // 검증 결과 반환
     } catch (Exception e) {
-      System.out.println("Signature validation error: " + e.getMessage());
+      logger.error("Signature validation error: {}", e.getMessage());
       return false; // 예외 발생 시 false 반환
     }
   }
