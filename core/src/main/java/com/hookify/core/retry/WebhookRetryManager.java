@@ -21,7 +21,7 @@ public class WebhookRetryManager {
       } catch (Exception e) {
         logService.logRetry(eventType, payload, attempt, e); // 실패 시 재시도 로그
         if (attempt == MAX_RETRIES) {
-          throw new IllegalStateException("Validation failed after retries.", e);
+          throw new IllegalStateException("Validation failed after retries", e);
         }
         try {
           Thread.sleep((long) Math.pow(2, attempt) * 1000); // 지수 백오프
