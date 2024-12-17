@@ -44,3 +44,4 @@ bin/
 /logs/github/*.log
 /logs/webhook_logs/*.json
 core/logs/webhook_logs/*.json
+examples/src/main/resources/application.properties
