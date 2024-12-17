@@ -2,3 +2,5 @@ jdk:
   - openjdk17
 gradle:
   arguments: clean build -x test
+  build:
+    script: ./gradlew publishToMavenLocal

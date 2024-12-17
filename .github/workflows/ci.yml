@@ -36,8 +36,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     permissions:
-      contents: write  # 태그 및 릴리스 생성 권한
-      packages: write  # JitPack 퍼블리싱을 위해 필요할 수 있음
+      contents: write
+      packages: write
 
     steps:
       - name: Checkout Code
@@ -67,6 +67,9 @@ jobs:
           git commit -m "ci: Bump version to $NEW_VERSION"
           git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
           git push origin main --tags
+
+      - name: Build and Publish
+        run: ./gradlew publishToMavenLocal
 
       - name: Create GitHub Release
         env:

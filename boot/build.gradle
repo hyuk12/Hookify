@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
     id 'maven-publish'
@@ -18,6 +18,15 @@ tasks.named('bootJar') {
 
 tasks.named('jar') {
     enabled = true // 일반 JAR 작업 활성화
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'boot' // 모듈별 artifactId 지정
+        }
+    }
 }
 
 processResources {
