@@ -1,10 +1,10 @@
 name: CI/CD Pipeline
 
 on:
-  pull_request:  # PR 발생 시 테스트 실행
+  pull_request:
     branches:
       - main
-  push:  # main 브랜치에 push 시 릴리즈 진행
+  push:
     branches:
       - main
 
@@ -36,13 +36,12 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     permissions:
-      contents: write   # 리포지토리에 대한 쓰기 권한 부여 (commit, tag, push)
+      contents: write  # 태그 및 릴리스 생성 권한
+      packages: write  # JitPack 퍼블리싱을 위해 필요할 수 있음
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # GITHUB_TOKEN 사용
 
       - name: Set Up JDK 17
         uses: actions/setup-java@v4
@@ -69,5 +68,11 @@ jobs:
           git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
           git push origin main --tags
 
-      - name: Publish to JitPack
-        run: ./gradlew publish
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ env.new_version }}" \
+            --title "Release v${{ env.new_version }}" \
+            --notes "Release version v${{ env.new_version }}" \
+            --verify-tag
