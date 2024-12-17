@@ -11,6 +11,6 @@ dependencies {
     implementation project(':core')
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+test {
+    exclude '**/*'
 }

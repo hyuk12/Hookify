@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/github")
 public class GitHubExampleController {
   private final WebhookPipeline webhookPipeline;
 
@@ -19,7 +19,7 @@ public class GitHubExampleController {
     this.webhookPipeline = webhookPipeline;
   }
 
-  @PostMapping("/github")
+  @PostMapping("/webhook")
   public ResponseEntity<String> handleGitHubWebhook(
       @RequestHeader("X-GitHub-Event") String eventType,
       @RequestHeader("X-Hub-Signature-256") String signature,
