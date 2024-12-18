@@ -1,4 +1,4 @@
-package com.hookify.handlers.github.handler;
+package com.hookify.handlers.github.payload;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
