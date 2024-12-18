@@ -10,11 +10,13 @@ public class GitHubDiscordMessageMapper {
     message.setContent("GitHub Webhook Event: " + eventType);
     message.setUsername("GitHub Webhook");
 
+    // Embed 생성
     DiscordMessage.Embed embed = new DiscordMessage.Embed();
     embed.setTitle("Event: " + eventType);
-    embed.setDescription(payload); // JSON 페이로드 그대로 전달
+    embed.setDescription("Payload:\n```json\n" + payload + "\n```");
     embed.setColor(7506394);
 
+    // Embed 리스트 설정
     message.setEmbeds(List.of(embed));
     return message;
   }
