@@ -12,12 +12,11 @@ import com.hookify.handlers.github.validator.GitHubWebhookValidator;
 public class GitHubWebhookPipeline {
   private static final WebhookRetryManager retryManager = new WebhookRetryManager();
 
-  public static WebhookPipeline create(String secret) {
+  public static WebhookPipeline create(String secret, PostProcessor... customProcessors) {
     WebhookValidator validator = new GitHubWebhookValidator(secret);
     WebhookHandler handler = new GitHubWebhookHandler();
-    PostProcessor postProcessor = new GitHubProcessor();
 
-    return new WebhookPipeline()
+    WebhookPipeline webhookPipeline = new WebhookPipeline()
         .validator((eventType, signature, timestamp, payload) -> {
           retryManager.retry(eventType, payload, () -> {
             if (!validator.validate(eventType, signature, timestamp, payload)) {
@@ -27,6 +26,13 @@ public class GitHubWebhookPipeline {
           return true;
         })
         .handleEvent(handler)
-        .postProcess(postProcessor);
+        .addPostProcessor(new GitHubProcessor());// 기본 프로세서 추가
+
+    // 사용자 정의 프로세서 추가
+    for (PostProcessor processor : customProcessors) {
+      webhookPipeline.addPostProcessor(processor);
+    }
+
+    return webhookPipeline;
   }
 }

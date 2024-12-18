@@ -3,7 +3,7 @@ package com.github.hyuk12.examples.discord;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hookify.core.pipe.WebhookPipeline;
-import com.hookify.handlers.discord.notifier.DiscordNotifier;
+import com.hookify.handlers.discord.processor.DiscordProcessor;
 import com.hookify.handlers.github.pipe.GitHubWebhookPipeline;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
@@ -17,6 +17,9 @@ public class DiscordWebhookExample {
     String discordWebhookUrl = "";
 
     WebhookPipeline pipeline = GitHubWebhookPipeline.create(githubSecret);
+    DiscordProcessor discordProcessor = DiscordProcessor.create(discordWebhookUrl);
+
+    pipeline.addPostProcessor(discordProcessor);
 
     HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
     server.createContext("/github/webhook", exchange -> {
@@ -36,13 +39,10 @@ public class DiscordWebhookExample {
           String repository = rootNode.path("repository").path("full_name").asText();
           String message = String.format("✅ [%s] 이벤트 성공: %s by %s", eventType, repository, sender);
 
-          // Discord에 메시지 전송
-          DiscordNotifier.sendMessage(discordWebhookUrl, message);
 
           exchange.sendResponseHeaders(200, message.length());
         } catch (Exception e) {
           String errorMessage = String.format("❌ [%s] 이벤트 실패: %s", eventType, e.getMessage());
-          DiscordNotifier.sendMessage(discordWebhookUrl, errorMessage);
           exchange.sendResponseHeaders(400, errorMessage.length());
         }
         exchange.getResponseBody().close();

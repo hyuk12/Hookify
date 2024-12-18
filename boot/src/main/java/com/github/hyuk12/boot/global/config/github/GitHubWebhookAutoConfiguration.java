@@ -1,4 +1,4 @@
-package com.github.hyuk12.boot.global.config;
+package com.github.hyuk12.boot.global.config.github;
 
 import com.github.hyuk12.boot.global.properties.WebhookProperties;
 import com.hookify.core.pipe.WebhookPipeline;

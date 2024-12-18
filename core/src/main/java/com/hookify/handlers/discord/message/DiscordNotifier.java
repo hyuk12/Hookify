@@ -1,5 +1,6 @@
-package com.hookify.handlers.discord.notifier;
+package com.hookify.handlers.discord.message;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -10,10 +11,12 @@ import org.slf4j.LoggerFactory;
 
 public class DiscordNotifier {
   private static final OkHttpClient client = new OkHttpClient();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final Logger logger = LoggerFactory.getLogger(DiscordNotifier.class);
-  public static void sendMessage(String webhookUrl, String message) {
+
+  public static void sendMessage(String webhookUrl, DiscordMessage message) {
     try {
-      String jsonPayload = "{\"content\": \"" + message + "\"}";
+      String jsonPayload = objectMapper.writeValueAsString(message);
 
       RequestBody body = RequestBody.create(
           jsonPayload, MediaType.get("application/json; charset=utf-8")
@@ -32,7 +35,7 @@ public class DiscordNotifier {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to send message to Discord: ", e);
     }
   }
 }

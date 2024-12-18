@@ -9,7 +9,7 @@ public class GitHubProcessor implements PostProcessor {
   private static final Logger logger = LoggerFactory.getLogger(GitHubProcessor.class);
 
   @Override
-  public void process(String payload) {
+  public void process(String eventType, String payload) {
     logger.info("Processing GitHub payload: {}", payload);
   }
 }

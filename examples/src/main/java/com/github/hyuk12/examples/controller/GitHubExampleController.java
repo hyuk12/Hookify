@@ -1,8 +1,7 @@
 package com.github.hyuk12.examples.controller;
 
-import com.github.hyuk12.examples.dto.Request;
 import com.hookify.core.pipe.WebhookPipeline;
-import lombok.RequiredArgsConstructor;
+import com.hookify.handlers.discord.processor.DiscordProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/github")
 public class GitHubExampleController {
   private final WebhookPipeline webhookPipeline;
+  private final DiscordProcessor discordProcessor;
 
   @Autowired
-  public GitHubExampleController(WebhookPipeline webhookPipeline) {
+  public GitHubExampleController(WebhookPipeline webhookPipeline, DiscordProcessor discordProcessor) {
     this.webhookPipeline = webhookPipeline;
+    this.discordProcessor = discordProcessor;
   }
 
   @PostMapping("/webhook")
@@ -27,6 +28,7 @@ public class GitHubExampleController {
       @RequestHeader("X-Hub-Signature-256") String signature,
       @RequestBody String payload) {
     try {
+      webhookPipeline.addPostProcessor(discordProcessor);
       webhookPipeline.execute(eventType, signature, null, payload);
       return ResponseEntity.ok("Webhook processed successfully!");
     } catch (Exception e) {

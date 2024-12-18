@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 
 public class WebhookPipeline {
   private final List<Consumer<WebhookContext>> steps = new ArrayList<>();
+  private final List<PostProcessor> postProcessors = new ArrayList<>(); // 다중 프로세스 추가
 
   public static class WebhookContext {
     public final String event;
@@ -35,8 +36,8 @@ public class WebhookPipeline {
     return this;
   }
 
-  public WebhookPipeline postProcess(PostProcessor postProcessor) {
-    steps.add(context -> postProcessor.process(context.payload));
+  public WebhookPipeline addPostProcessor(PostProcessor postProcessor) {
+    steps.add(context -> postProcessor.process(context.event, context.payload));
     return this;
   }
 
@@ -44,6 +45,10 @@ public class WebhookPipeline {
     WebhookContext context = new WebhookContext(event, signature, timestamp, payload);
     for (Consumer<WebhookContext> step : steps) {
       step.accept(context);
+    }
+
+    for (PostProcessor postProcessor : postProcessors) {
+      postProcessor.process(event, payload);
     }
   }
 
