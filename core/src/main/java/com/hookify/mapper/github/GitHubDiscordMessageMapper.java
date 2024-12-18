@@ -43,6 +43,11 @@ public class GitHubDiscordMessageMapper {
   private static String getEmoji(JsonNode payload) {
     String status = payload.path("action").asText();
     return switch (status) {
+      case "opened", "synchronize", "reopened" -> "🔵";
+      case "closed" -> "🔴";
+      case "created", "edited" -> "📝";
+      case "published" -> "📦";
+      case "started" -> "🏃";
       case "completed" -> "✅";
       case "failure" -> "⚠️";
       case "in_progress" -> "⏳";
