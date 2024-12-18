@@ -128,16 +128,15 @@ public class GitHubDiscordMessageMapper {
   private static String summarizeCheckSuiteEvent(JsonNode node) {
     String status = node.path("check_suite").path("status").asText();
     String conclusion = node.path("check_suite").path("conclusion").asText();
-    String headSha = node.path("check_suite").path("actor").path("login").asText();
-    return String.format("**Status**: %s\\n**Conclusion**: %s\\n**Head SHA**: %s", status, conclusion, headSha);
+    String headSha = node.path("check_suite").path("head_sha").asText(); // head_sha 필드 수정
+    return String.format("**Status**: %s%n**Conclusion**: %s%n**Head SHA**: %s", status, conclusion, headSha);
   }
-
 
   private static String summarizeReleaseEvent(JsonNode node) {
     String name = node.path("release").path("name").asText();
-    String status = node.path("release").path("tag_name").asText();
+    String tagName = node.path("release").path("tag_name").asText();
     String author = node.path("release").path("author").path("login").asText();
-    return String.format("**Release**: %s\n**Tag**: %s\\n**Author**: %s", name, status, author);
+    return String.format("**Release**: %s%n**Tag**: %s%n**Author**: %s", name, tagName, author);
   }
 
 
