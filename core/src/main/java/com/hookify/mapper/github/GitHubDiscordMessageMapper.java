@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hookify.core.enums.EventType;
 import com.hookify.handlers.discord.message.DiscordMessage;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,9 +19,11 @@ public class GitHubDiscordMessageMapper {
   private static final Set<String> processedEvents = ConcurrentHashMap.newKeySet();
   private static Map<String, Map<String, String>> eventFilters = new ConcurrentHashMap<>(); // 필터 조건 주입
   private static final Logger logger = LoggerFactory.getLogger(GitHubDiscordMessageMapper.class);
+  private static List<String> enabledEvents = new ArrayList<>();
 
   public static void setEventFilters(Map<String, Map<String, String>> filters) {
-    eventFilters = filters;
+    eventFilters.clear();
+    eventFilters.putAll(filters);
 
     // 필터 설정이 적용된 후 로그 출력
     logger.info("Event Filters have been set:");
@@ -29,6 +33,15 @@ public class GitHubDiscordMessageMapper {
         logger.info(" - Condition: Key = {}, Value = {}", condition.getKey(), condition.getValue());
       }
     }
+  }
+
+  public static void setEnabledEvents(List<String> events) {
+    enabledEvents.clear();
+    enabledEvents.addAll(events);
+  }
+
+  public static List<String> getEnabledEvents() {
+    return Collections.unmodifiableList(enabledEvents); // 수정 불가능한 리스트로 반환
   }
 
   public static DiscordMessage mapToDiscordMessage(String eventType, String payload) {
@@ -267,6 +280,5 @@ public class GitHubDiscordMessageMapper {
       default -> 0x808080; // Gray
     };
   }
-
 
 }
