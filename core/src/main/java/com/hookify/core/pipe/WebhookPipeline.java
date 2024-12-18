@@ -37,7 +37,7 @@ public class WebhookPipeline {
   }
 
   public WebhookPipeline addPostProcessor(PostProcessor postProcessor) {
-    steps.add(context -> postProcessor.process(context.event, context.payload));
+    this.postProcessors.add(postProcessor);
     return this;
   }
 
