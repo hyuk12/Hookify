@@ -1,14 +1,15 @@
 name: CI/CD Pipeline
 
 on:
-  pull_request:
+  pull_request: # PR 발생 시 테스트 실행
     branches:
       - main
-  push:
+  push: # main 브랜치에 push 시 릴리즈 진행
     branches:
       - main
 
 jobs:
+  # 1. 테스트 단계
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -29,6 +30,7 @@ jobs:
       - name: Run Tests
         run: ./gradlew test
 
+  # 2. 릴리즈 및 퍼블리싱 단계
   release:
     name: Release and Publish
     needs: test
@@ -42,6 +44,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 모든 Git 히스토리 가져오기 (semantic-release 필수)
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: |
+          npm install semantic-release @semantic-release/git @semantic-release/github --save-dev
 
       - name: Set Up JDK 17
         uses: actions/setup-java@v4
@@ -52,30 +65,10 @@ jobs:
       - name: Set Up Gradle
         uses: gradle/gradle-build-action@v3
 
-      - name: Increment Version
-        id: version
-        run: |
-          CURRENT_VERSION=$(cat version.txt)
-          IFS='.' read -r -a version_parts <<< "$CURRENT_VERSION"
-          PATCH=$((version_parts[2] + 1))
-          NEW_VERSION="${version_parts[0]}.${version_parts[1]}.$PATCH"
-          echo $NEW_VERSION > version.txt
-          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
-          git config --global user.name "${{ secrets.GIT_USER_NAME }}"
-          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
-          git add version.txt
-          git commit -m "ci: Bump version to $NEW_VERSION"
-          git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
-          git push origin main --tags
-
-      - name: Build and Publish
+      - name: Build and Publish to Maven Local
         run: ./gradlew publishToMavenLocal
 
-      - name: Create GitHub Release
+      - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "v${{ env.new_version }}" \
-            --title "Release v${{ env.new_version }}" \
-            --notes "Release version v${{ env.new_version }}" \
-            --verify-tag
+        run: npx semantic-release

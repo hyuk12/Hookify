@@ -15,6 +15,79 @@ Slack, GitHub, 결제 시스템(Stripe, PayPal) 등 다양한 서비스와 통�
 - **사용자 정의 핸들러**: 사용자가 정의한 이벤트 핸들러를 등록하여 유연한 처리 가능.
 
 ---
+📌 커밋 메시지 작성 규칙
+이 프로젝트는 Semantic Versioning에 따라 버전이 자동으로 관리됩니다.
+따라서 아래와 같은 커밋 메시지 규칙을 따라주세요:
+
+커밋 메시지 형식
+```text
+<type>: <short description>
+
+<optional body>
+
+<optional footer>
+
+```
+
+타입(Type)
+커밋의 목적을 나타냅니다. 다음 타입을 사용해주세요:
+
+feat: 새로운 기능 추가 (버전 MINOR 증가)<br>
+fix: 버그 수정 (버전 PATCH 증가)<br>
+chore: 빌드, 설정 변경 등 코드에 영향이 없는 변경<br>
+refactor: 코드 리팩토링 (기능 변경 없음)<br>
+docs: 문서 변경 (README.md 등)<br>
+test: 테스트 코드 추가 및 수정<br>
+style: 코드 스타일 변경 (공백, 포맷 등)<br>
+perf: 성능 개선<br>
+ci: CI/CD 설정 및 스크립트 변경<br>
+
+예시
+**기능 추가(feat)**:
+```text
+feat: Add webhook handler registry
+
+- 사용자 정의 핸들러를 등록할 수 있는 레지스트리 기능 추가
+- Map<String, Handler> 기반으로 이벤트 타입과 핸들러 매핑
+
+```
+
+**버그 수정(fix)**:
+```text
+fix: Resolve signature validation issue
+
+- Signature 비교 시 인코딩 문제 해결
+- GitHub WebhookValidator 검증 로직 수정
+
+```
+
+**코드 리팩토링(refactor)**:
+```text
+refactor: Simplify WebhookPipeline validation flow
+
+- 중복 코드 제거 및 구조 개선
+
+
+```
+
+**문서 수정(docs)**:
+```text
+docs: Add commit message guidelines to README
+
+- Semantic release를 위해 커밋 메시지 규칙 추가
+- feat, fix 등 타입에 대한 설명 포함
+```
+
+**BREAKING CHANGES**:
+기존 기능을 호환되지 않게 변경하는 경우, **BREAKING CHANGE**를 커밋 메시지 본문에 추가해야 합니다.
+```text
+feat: Update WebhookValidator interface
+
+BREAKING CHANGE: validate() method now requires 'eventType' parameter
+
+```
+---
+
 
 ## 📦 설치 방법
 #### 1. Gradle 설치 예제
