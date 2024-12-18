@@ -18,7 +18,7 @@ public class DiscordNotifier {
   public static void sendMessage(String webhookUrl, DiscordMessage message) {
     try {
       if (Objects.isNull(message)) {
-        logger.info("No message to send to Discord");
+        logger.warn("No message to send to Discord");
         return;
       }
 
@@ -37,7 +37,8 @@ public class DiscordNotifier {
         if (response.isSuccessful()) {
           logger.info("Message sent to Discord successfully!");
         } else {
-          logger.warn("Failed to send message: {}", response.body().string());
+          logger.error("Failed to send message to Discord: {} - Payload: {}",
+              response.body().string(), jsonPayload);
         }
       }
     } catch (Exception e) {

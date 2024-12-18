@@ -6,19 +6,24 @@ import java.util.List;
 
 public class GitHubDiscordMessageMapper {
   public static DiscordMessage mapToDiscordMessage(String eventType, String payload) {
-    if (eventType.contains(EventType.SUCCESS.name())) {
-      return null;
-    }
     DiscordMessage message = new DiscordMessage();
     message.setContent("GitHub Webhook Event: " + eventType);
     message.setUsername("GitHub Webhook");
 
     DiscordMessage.Embed embed = new DiscordMessage.Embed();
-    embed.setTitle("GitHub Event: " + eventType);
+    embed.setTitle("Event: " + eventType);
     embed.setDescription("Payload: " + payload);
-    embed.setColor(7506394);
+    embed.setColor(determineColor(eventType));
 
     message.setEmbeds(List.of(embed));
     return message;
+  }
+
+  private static int determineColor(String eventType) {
+    return switch (eventType) {
+      case "push" -> 0x00FF00; // Green
+      case "pull_request" -> 0x0000FF; // Blue
+      default -> 0xFF0000; // Red
+    };
   }
 }

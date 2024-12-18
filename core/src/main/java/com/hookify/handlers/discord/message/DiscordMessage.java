@@ -1,8 +1,6 @@
 package com.hookify.handlers.discord.message;
 
 import java.util.List;
-import lombok.Data;
-
 
 public class DiscordMessage {
   private String content; // 일반 텍스트 메시지 내용
