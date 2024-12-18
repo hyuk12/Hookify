@@ -1,6 +1,7 @@
 package com.hookify.handlers.discord.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -16,6 +17,11 @@ public class DiscordNotifier {
 
   public static void sendMessage(String webhookUrl, DiscordMessage message) {
     try {
+      if (Objects.isNull(message)) {
+        logger.info("No message to send to Discord");
+        return;
+      }
+
       String jsonPayload = objectMapper.writeValueAsString(message);
 
       RequestBody body = RequestBody.create(
