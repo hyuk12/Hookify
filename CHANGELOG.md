@@ -1,3 +1,10 @@
+## [1.3.8](https://github.com/hyuk12/Hookify/compare/v1.3.7...v1.3.8) (2024-12-18)
+
+
+### Bug Fixes
+
+* message mapper fix ([442d025](https://github.com/hyuk12/Hookify/commit/442d025ad9dd0493ee22732bc45ade3297fd2844))
+
 ## [1.3.7](https://github.com/hyuk12/Hookify/compare/v1.3.6...v1.3.7) (2024-12-18)
 
 
