@@ -17,12 +17,13 @@ public class DiscordNotifier {
 
   public static void sendMessage(String webhookUrl, DiscordMessage message) {
     try {
-      if (Objects.isNull(message)) {
-        logger.warn("No message to send to Discord");
+      if (Objects.isNull(message) || (message.getContent() == null && message.getEmbeds().isEmpty())) {
+        logger.warn("Message is empty. Nothing to send.");
         return;
       }
 
       String jsonPayload = objectMapper.writeValueAsString(message);
+      logger.debug("Generated JSON Payload: {}", jsonPayload);
 
       RequestBody body = RequestBody.create(
           jsonPayload, MediaType.get("application/json; charset=utf-8")
@@ -37,10 +38,21 @@ public class DiscordNotifier {
         if (response.isSuccessful()) {
           logger.info("Message sent to Discord successfully!");
         } else {
-          logger.error("Failed to send message to Discord: {} - Payload: {}",
-              response.body().string(), jsonPayload);
+          String retryAfter = response.header("Retry-After");
+          if (retryAfter != null) {
+            int delay = Integer.parseInt(retryAfter) * 1000; // ms 단위로 변환
+            logger.warn("Rate limited. Retrying after {} ms", delay);
+            Thread.sleep(delay);
+            sendMessage(webhookUrl, message); // 재시도
+          } else {
+            logger.error("Failed to send message to Discord: {} - Payload: {}",
+                response.body().string(), jsonPayload);
+          }
         }
       }
+
+      // 요청 간 딜레이 추가
+      Thread.sleep(500); // 500ms 지연
     } catch (Exception e) {
       logger.error("Failed to send message to Discord: ", e);
     }

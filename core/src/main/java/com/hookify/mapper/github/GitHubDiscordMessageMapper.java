@@ -12,8 +12,8 @@ public class GitHubDiscordMessageMapper {
 
     DiscordMessage.Embed embed = new DiscordMessage.Embed();
     embed.setTitle("Event: " + eventType);
-    embed.setDescription("Payload: " + payload);
-    embed.setColor(determineColor(eventType));
+    embed.setDescription(payload); // JSON 페이로드 그대로 전달
+    embed.setColor(7506394);
 
     message.setEmbeds(List.of(embed));
     return message;
