@@ -13,13 +13,21 @@ public class GitHubDiscordMessageMapper {
     // Embed 생성
     DiscordMessage.Embed embed = new DiscordMessage.Embed();
     embed.setTitle("Event: " + eventType);
-    embed.setDescription("Payload:\n```json\n" + payload + "\n```");
-    embed.setColor(7506394);
+    embed.setDescription(summarizePayload(payload));
+    embed.setColor(determineColor(eventType));
 
     // Embed 리스트 설정
     message.setEmbeds(List.of(embed));
     return message;
   }
+
+  private static String summarizePayload(String payload) {
+    if (payload.length() > 500) { // JSON 길이 제한
+      return payload.substring(0, 500) + "...(truncated)";
+    }
+    return payload;
+  }
+
 
   private static int determineColor(String eventType) {
     return switch (eventType) {
