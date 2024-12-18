@@ -1,5 +1,6 @@
 package com.github.hyuk12.examples.controller;
 
+import com.github.hyuk12.boot.global.config.WebhookConfig;
 import com.hookify.core.pipe.WebhookPipeline;
 import com.hookify.handlers.discord.processor.DiscordProcessor;
 import org.springframework.beans.factory.annotation.Autowired;

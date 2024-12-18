@@ -61,17 +61,19 @@ public class GitHubDiscordMessageMapper {
     if (eventFilters.containsKey(eventType)) {
       Map<String, String> conditions = eventFilters.get(eventType);
       for (Map.Entry<String, String> entry : conditions.entrySet()) {
-        String key = entry.getKey();
-        String expectedValue = entry.getValue();
-        String actualValue = jsonNode.path(key).asText();
+        String key = entry.getKey(); // action 또는 state
+        String expectedValue = entry.getValue(); // "*", "opened", 등
+        String actualValue = jsonNode.path(key).asText(); // 실제 JSON 값
 
+        // 필터 조건에 맞지 않으면 이벤트 무시
         if (!"*".equals(expectedValue) && !expectedValue.equalsIgnoreCase(actualValue)) {
-          return true; // 조건에 맞지 않으면 필터링
+          return true; // 필터링됨
         }
       }
     }
-    return false; // 필터링하지 않음
+    return false; // 필터링되지 않음
   }
+
 
 
   private static String getEmoji(JsonNode payload) {
