@@ -5,29 +5,54 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hookify.core.enums.EventType;
 import com.hookify.handlers.discord.message.DiscordMessage;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GitHubDiscordMessageMapper {
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final ConcurrentHashMap<String, Boolean> processedEventCache = new ConcurrentHashMap<>();
 
   public static DiscordMessage mapToDiscordMessage(String eventType, String payload) {
     try {
       JsonNode jsonNode = objectMapper.readTree(payload);
-      DiscordMessage message = new DiscordMessage();
+      String eventId = getEventId(eventType, jsonNode); // 고유 이벤트 ID 가져오기
 
+      // 중복 확인
+      if (isDuplicateEvent(eventId)) {
+        return null; // 중복이면 메시지 생성 X
+      }
+
+      DiscordMessage message = new DiscordMessage();
       message.setContent("GitHub Webhook Event: " + eventType);
       message.setUsername("GitHub Webhook");
-      message.setAvatarUrl(getUserAvatarUrl(eventType, jsonNode)); // 아바타 URL 설정
+      message.setAvatarUrl(getUserAvatarUrl(eventType, jsonNode));
 
       DiscordMessage.Embed embed = new DiscordMessage.Embed();
       embed.setTitle("Event: " + eventType);
-      embed.setDescription(summarizeEvent(eventType, jsonNode)); // 이벤트 요약
-      embed.setColor(getEventColor(eventType)); // 이벤트 색상 설정
+      embed.setDescription(summarizeEvent(eventType, jsonNode));
+      embed.setColor(getEventColor(eventType));
 
       message.setEmbeds(List.of(embed));
       return message;
     } catch (Exception e) {
       throw new RuntimeException("Failed to map payload to DiscordMessage", e);
     }
+  }
+
+  private static String getEventId(String eventType, JsonNode node) {
+    return switch (eventType) {
+      case "push" -> node.path("after").asText(); // 커밋 해시값 사용
+      case "workflow_run" -> node.path("workflow_run").path("id").asText(); // 워크플로우 ID 사용
+      case "pull_request" -> node.path("pull_request").path("id").asText(); // PR ID 사용
+      default -> String.valueOf(System.currentTimeMillis()); // 기본값으로 현재 시간 사용
+    };
+  }
+
+  private static boolean isDuplicateEvent(String eventId) {
+    if (processedEventCache.containsKey(eventId)) {
+      return true;
+    }
+    processedEventCache.put(eventId, true);
+    return false;
   }
 
   private static String summarizeEvent(String eventType, JsonNode node) {
@@ -41,18 +66,16 @@ public class GitHubDiscordMessageMapper {
 
   private static String summarizePushEvent(JsonNode node) {
     String branch = node.path("ref").asText();
-    String before = node.path("before").asText();
     String after = node.path("after").asText();
     String pusher = node.path("pusher").path("name").asText();
-    return String.format("Branch: %s\nCommits: %s → %s\nPusher: %s", branch, before, after, pusher);
+    return String.format("Branch: %s\nCommit: %s\nPusher: %s", branch, after, pusher);
   }
 
   private static String summarizePullRequestEvent(JsonNode node) {
     String title = node.path("pull_request").path("title").asText();
     String state = node.path("action").asText();
     String user = node.path("pull_request").path("user").path("login").asText();
-    String url = node.path("pull_request").path("html_url").asText();
-    return String.format("Title: %s\nState: %s\nUser: %s\nLink: %s", title, state, user, url);
+    return String.format("Title: %s\nState: %s\nUser: %s", title, state, user);
   }
 
   private static String summarizeWorkflowEvent(JsonNode node) {
