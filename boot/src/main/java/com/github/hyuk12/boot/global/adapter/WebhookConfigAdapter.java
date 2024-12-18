@@ -13,6 +13,4 @@ public class WebhookConfigAdapter {
   public void applyToMapper() {
     GitHubDiscordMessageMapper.setEventFilters(webhookConfig.getFilters());
   }
-
-
 }

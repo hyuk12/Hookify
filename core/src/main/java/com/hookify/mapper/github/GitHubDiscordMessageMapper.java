@@ -9,28 +9,41 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GitHubDiscordMessageMapper {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final Set<String> processedEvents = ConcurrentHashMap.newKeySet();
   private static Map<String, Map<String, String>> eventFilters = new ConcurrentHashMap<>(); // 필터 조건 주입
+  private static final Logger logger = LoggerFactory.getLogger(GitHubDiscordMessageMapper.class);
 
   public static void setEventFilters(Map<String, Map<String, String>> filters) {
     eventFilters = filters;
+
+    // 필터 설정이 적용된 후 로그 출력
+    logger.info("Event Filters have been set:");
+    for (Map.Entry<String, Map<String, String>> entry : eventFilters.entrySet()) {
+      logger.info("Event Type: {}", entry.getKey());
+      for (Map.Entry<String, String> condition : entry.getValue().entrySet()) {
+        logger.info(" - Condition: Key = {}, Value = {}", condition.getKey(), condition.getValue());
+      }
+    }
   }
 
   public static DiscordMessage mapToDiscordMessage(String eventType, String payload) {
     try {
       JsonNode jsonNode = objectMapper.readTree(payload);
-      String eventId = getEventId(eventType, jsonNode); // 고유 이벤트 ID 가져오기
 
       // 이벤트 필터링: 외부 조건 확인
       if (shouldFilterEvent(eventType, jsonNode)) {
+        logger.info("Event [{}] was filtered out based on filters: {}", eventType, eventFilters.get(eventType));
         return null; // 필터링된 이벤트는 무시
       }
 
       // 중복 확인
       if (isDuplicate(eventType, jsonNode)) {
+        logger.info("Duplicate event [{}] was ignored.", eventType);
         return null; // 중복 이벤트는 무시
       }
 
