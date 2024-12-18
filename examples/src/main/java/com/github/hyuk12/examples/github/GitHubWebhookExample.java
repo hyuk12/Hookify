@@ -1,4 +1,4 @@
-package com.github.hyuk12.examples;
+package com.github.hyuk12.examples.github;
 
 import com.hookify.core.pipe.WebhookPipeline;
 import com.hookify.handlers.github.pipe.GitHubWebhookPipeline;
