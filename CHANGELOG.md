@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/hyuk12/Hookify/compare/v1.3.2...v1.3.3) (2024-12-18)
+
+
+### Bug Fixes
+
+* webhook config fix ([2afcd5f](https://github.com/hyuk12/Hookify/commit/2afcd5fcd04d6df8842e0add18e9b49fbb1c235c))
+
 ## [1.3.2](https://github.com/hyuk12/Hookify/compare/v1.3.1...v1.3.2) (2024-12-18)
 
 
