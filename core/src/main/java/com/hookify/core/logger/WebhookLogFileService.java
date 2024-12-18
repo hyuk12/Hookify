@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import jdk.jfr.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
