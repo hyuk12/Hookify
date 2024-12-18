@@ -5,11 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hookify.core.enums.EventType;
 import com.hookify.handlers.discord.message.DiscordMessage;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GitHubDiscordMessageMapper {
   private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static final ConcurrentHashMap<String, Boolean> processedEventCache = new ConcurrentHashMap<>();
+  private static final Set<String> processedEvents = ConcurrentHashMap.newKeySet();
 
   public static DiscordMessage mapToDiscordMessage(String eventType, String payload) {
     try {
@@ -17,17 +18,18 @@ public class GitHubDiscordMessageMapper {
       String eventId = getEventId(eventType, jsonNode); // 고유 이벤트 ID 가져오기
 
       // 중복 확인
-      if (isDuplicateEvent(eventId)) {
-        return null; // 중복이면 메시지 생성 X
+      if (isDuplicate(eventType, jsonNode)) {
+        return null; // 중복 이벤트는 무시
       }
 
+      String emoji = getEmoji(eventType, jsonNode);
       DiscordMessage message = new DiscordMessage();
-      message.setContent("GitHub Webhook Event: " + eventType);
+      message.setContent(emoji + " **GitHub Webhook Event: " + eventType + "**");
       message.setUsername("GitHub Webhook");
       message.setAvatarUrl(getUserAvatarUrl(eventType, jsonNode));
 
       DiscordMessage.Embed embed = new DiscordMessage.Embed();
-      embed.setTitle("Event: " + eventType);
+      embed.setTitle(emoji + " **Event: " + eventType + "**");
       embed.setDescription(summarizeEvent(eventType, jsonNode));
       embed.setColor(getEventColor(eventType));
 
@@ -38,33 +40,51 @@ public class GitHubDiscordMessageMapper {
     }
   }
 
+  private static String getEmoji(String eventType, JsonNode payload) {
+    String status = payload.path("workflow_run").path("status").asText();
+    return switch (status) {
+      case "completed" -> "✅";
+      case "failure" -> "⚠️";
+      case "in_progress" -> "⏳";
+      default -> "🛠️";
+    };
+  }
+
   private static String getEventId(String eventType, JsonNode node) {
     return switch (eventType) {
-      case "push" -> node.path("after").asText(); // 커밋 해시 사용
-      case "workflow_run" -> node.path("workflow_run").path("id").asText(); // 워크플로우 ID 사용
-      case "check_run" -> {
-        String checkRunSha = node.path("check_run").path("head_sha").asText();
-        String checkRunName = node.path("check_run").path("name").asText();
-        String checkRunStatus = node.path("check_run").path("status").asText();
-        yield String.format("%s-%s-%s", checkRunSha, checkRunName, checkRunStatus);
-      }
-      case "workflow_job" -> {
-        String jobSha = node.path("workflow_job").path("head_sha").asText();
-        String jobName = node.path("workflow_job").path("name").asText();
-        String jobStatus = node.path("workflow_job").path("status").asText();
-        yield String.format("%s-%s-%s", jobSha, jobName, jobStatus);
-      }
-      case "pull_request" -> node.path("pull_request").path("id").asText();
+      case "push" -> node.path("after").asText();
+      case "workflow_run" -> node.path("workflow_run").path("id").asText();
+      case "check_run" -> String.format("%s-%s-%s",
+          node.path("check_run").path("head_sha").asText(),
+          node.path("check_run").path("name").asText(),
+          node.path("check_run").path("status").asText()
+      );
+      case "workflow_job" -> String.format("%s-%s-%s",
+          node.path("workflow_job").path("head_sha").asText(),
+          node.path("workflow_job").path("name").asText(),
+          node.path("workflow_job").path("status").asText()
+      );
+      case "check_suite" -> String.format("%s-%s-%s",
+          node.path("check_suite").path("head_sha").asText(),
+          node.path("check_suite").path("status").asText(),
+          node.path("check_suite").path("conclusion").asText()
+      );
+      case "release" -> String.format("%s-%s",
+          node.path("release").path("id").asText(),
+          node.path("release").path("tag_name").asText()
+      );
+      case "pull_request" -> String.format("%s-%s-%s",
+          node.path("pull_request").path("id").asText(),
+          node.path("pull_request").path("number").asText(),
+          node.path("pull_request").path("state").asText()
+      );
       default -> String.valueOf(System.currentTimeMillis());
     };
   }
 
-  private static boolean isDuplicateEvent(String eventId) {
-    if (processedEventCache.containsKey(eventId)) {
-      return true;
-    }
-    processedEventCache.put(eventId, true);
-    return false;
+  private static boolean isDuplicate(String eventType, JsonNode payload) {
+    String eventId = getEventId(eventType, payload);
+    return !processedEvents.add(eventId);
   }
 
   private static String summarizeEvent(String eventType, JsonNode node) {
@@ -72,6 +92,8 @@ public class GitHubDiscordMessageMapper {
       case "push" -> summarizePushEvent(node);
       case "pull_request" -> summarizePullRequestEvent(node);
       case "workflow_run" -> summarizeWorkflowEvent(node);
+      case "check_suite" -> summarizeCheckSuiteEvent(node);
+      case "release" -> summarizeReleaseEvent(node);
       default -> "Unhandled event type: " + eventType;
     };
   }
@@ -80,14 +102,14 @@ public class GitHubDiscordMessageMapper {
     String branch = node.path("ref").asText();
     String after = node.path("after").asText();
     String pusher = node.path("pusher").path("name").asText();
-    return String.format("Branch: %s\nCommit: %s\nPusher: %s", branch, after, pusher);
+    return String.format("**Branch**: %s\n**Commit**: %s\n**Pusher**: %s", branch, after, pusher);
   }
 
   private static String summarizePullRequestEvent(JsonNode node) {
     String title = node.path("pull_request").path("title").asText();
     String state = node.path("action").asText();
     String user = node.path("pull_request").path("user").path("login").asText();
-    return String.format("Title: %s\nState: %s\nUser: %s", title, state, user);
+    return String.format("**Title**: %s\n**State**: %s\n**User**: %s", title, state, user);
   }
 
   private static String summarizeWorkflowEvent(JsonNode node) {
@@ -95,8 +117,24 @@ public class GitHubDiscordMessageMapper {
     String status = node.path("workflow_run").path("status").asText();
     String conclusion = node.path("workflow_run").path("conclusion").asText();
     String actor = node.path("workflow_run").path("actor").path("login").asText();
-    return String.format("Workflow: %s\nStatus: %s\nConclusion: %s\nActor: %s", name, status, conclusion, actor);
+    return String.format("**Workflow**: %s\n**Status**: %s\n**Conclusion**: %s\n**Actor**: %s", name, status, conclusion, actor);
   }
+
+  private static String summarizeCheckSuiteEvent(JsonNode node) {
+    String status = node.path("check_suite").path("status").asText();
+    String conclusion = node.path("check_suite").path("conclusion").asText();
+    String headSha = node.path("check_suite").path("actor").path("login").asText();
+    return String.format("**Status**: %s\\n**Conclusion**: %s\\n**Head SHA**: %s", status, conclusion, headSha);
+  }
+
+
+  private static String summarizeReleaseEvent(JsonNode node) {
+    String name = node.path("release").path("name").asText();
+    String status = node.path("release").path("tag_name").asText();
+    String author = node.path("release").path("author").path("login").asText();
+    return String.format("**Release**: %s\n**Tag**: %s\\n**Author**: %s", name, status, author);
+  }
+
 
   private static String getUserAvatarUrl(String eventType, JsonNode node) {
     return switch (eventType) {
