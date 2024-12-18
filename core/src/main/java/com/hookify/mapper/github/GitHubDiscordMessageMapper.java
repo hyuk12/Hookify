@@ -22,7 +22,7 @@ public class GitHubDiscordMessageMapper {
         return null; // 중복 이벤트는 무시
       }
 
-      String emoji = getEmoji(eventType, jsonNode);
+      String emoji = getEmoji(jsonNode);
       DiscordMessage message = new DiscordMessage();
       message.setContent(emoji + " **GitHub Webhook Event: " + eventType + "**");
       message.setUsername("GitHub Webhook");
@@ -40,8 +40,8 @@ public class GitHubDiscordMessageMapper {
     }
   }
 
-  private static String getEmoji(String eventType, JsonNode payload) {
-    String status = payload.path("workflow_run").path("status").asText();
+  private static String getEmoji(JsonNode payload) {
+    String status = payload.path("action").asText();
     return switch (status) {
       case "completed" -> "✅";
       case "failure" -> "⚠️";
