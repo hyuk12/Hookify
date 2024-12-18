@@ -48,6 +48,7 @@ public class GitHubDiscordMessageMapper {
       case "created", "edited" -> "📝";
       case "published" -> "📦";
       case "started" -> "🏃";
+      case "deleted" -> "🗑️";
       case "completed" -> "✅";
       case "failure" -> "⚠️";
       case "in_progress" -> "⏳";
@@ -83,6 +84,21 @@ public class GitHubDiscordMessageMapper {
           node.path("pull_request").path("number").asText(),
           node.path("pull_request").path("state").asText()
       );
+      case "pull_request_review" -> String.format("%s-%s-%s",
+          node.path("pull_request_review").path("id").asText(),
+          node.path("pull_request_review").path("pull_request_url").asText(),
+          node.path("pull_request_review").path("state").asText()
+      );
+      case "pull_request_review_comment" -> String.format("%s-%s-%s",
+          node.path("pull_request_review_comment").path("id").asText(),
+          node.path("pull_request_review_comment").path("pull_request_url").asText(),
+          node.path("pull_request_review_comment").path("state").asText()
+      );
+      case "create", "delete" -> String.format("%s-%s-%s",
+          node.path("ref").asText(),
+          node.path("ref_type").asText(),
+          node.path("sender").path("login").asText()
+      );
       default -> String.valueOf(System.currentTimeMillis());
     };
   }
@@ -99,8 +115,26 @@ public class GitHubDiscordMessageMapper {
       case "workflow_run" -> summarizeWorkflowEvent(node);
       case "check_suite" -> summarizeCheckSuiteEvent(node);
       case "release" -> summarizeReleaseEvent(node);
+      case "delete" -> summarizeDeleteEvent(node);
+      case "create" -> summarizeCreateEvent(node);
       default -> "Unhandled event type: " + eventType;
     };
+  }
+
+  private static String summarizeCreateEvent(JsonNode node) {
+    String ref = node.path("ref").asText(); // 생성된 브랜치나 태그 이름
+    String refType = node.path("ref_type").asText(); // ref 타입: branch, tag 등
+    String actor = node.path("sender").path("login").asText(); // 이벤트를 발생시킨 사용자
+
+    return String.format("**Created**: `%s`%n**Type**: `%s`%n**Actor**: `%s`", ref, refType, actor);
+  }
+
+  private static String summarizeDeleteEvent(JsonNode node) {
+    String ref = node.path("ref").asText(); // 삭제된 브랜치나 태그 이름
+    String refType = node.path("ref_type").asText(); // ref 타입: branch, tag 등
+    String actor = node.path("sender").path("login").asText(); // 이벤트를 발생시킨 사용자
+
+    return String.format("**Deleted**: `%s`%n**Type**: `%s`%n**Actor**: `%s`", ref, refType, actor);
   }
 
   private static String summarizePushEvent(JsonNode node) {
@@ -154,6 +188,10 @@ public class GitHubDiscordMessageMapper {
       case "push" -> 0x00FF00; // Green
       case "pull_request" -> 0xFFD700; // Gold
       case "workflow_run" -> 0x1E90FF; // DodgerBlue
+      case "check_suite" -> 0xFFA500; // Orange
+      case "release" -> 0x800080; // Purple
+      case "delete" -> 0xFF0000; // Red
+      case "create" -> 0x008000; // Green
       default -> 0x808080; // Gray
     };
   }
