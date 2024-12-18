@@ -40,10 +40,22 @@ public class GitHubDiscordMessageMapper {
 
   private static String getEventId(String eventType, JsonNode node) {
     return switch (eventType) {
-      case "push" -> node.path("after").asText(); // 커밋 해시값 사용
+      case "push" -> node.path("after").asText(); // 커밋 해시 사용
       case "workflow_run" -> node.path("workflow_run").path("id").asText(); // 워크플로우 ID 사용
-      case "pull_request" -> node.path("pull_request").path("id").asText(); // PR ID 사용
-      default -> String.valueOf(System.currentTimeMillis()); // 기본값으로 현재 시간 사용
+      case "check_run" -> {
+        String checkRunSha = node.path("check_run").path("head_sha").asText();
+        String checkRunName = node.path("check_run").path("name").asText();
+        String checkRunStatus = node.path("check_run").path("status").asText();
+        yield String.format("%s-%s-%s", checkRunSha, checkRunName, checkRunStatus);
+      }
+      case "workflow_job" -> {
+        String jobSha = node.path("workflow_job").path("head_sha").asText();
+        String jobName = node.path("workflow_job").path("name").asText();
+        String jobStatus = node.path("workflow_job").path("status").asText();
+        yield String.format("%s-%s-%s", jobSha, jobName, jobStatus);
+      }
+      case "pull_request" -> node.path("pull_request").path("id").asText();
+      default -> String.valueOf(System.currentTimeMillis());
     };
   }
 
