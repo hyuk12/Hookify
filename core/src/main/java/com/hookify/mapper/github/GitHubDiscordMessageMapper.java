@@ -5,40 +5,74 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hookify.core.enums.EventType;
 import com.hookify.handlers.discord.message.DiscordMessage;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jetbrains.annotations.NotNull;
 
 public class GitHubDiscordMessageMapper {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final Set<String> processedEvents = ConcurrentHashMap.newKeySet();
+  private static Map<String, Map<String, String>> eventFilters = new ConcurrentHashMap<>(); // 필터 조건 주입
+
+  public static void setEventFilters(Map<String, Map<String, String>> filters) {
+    eventFilters = filters;
+  }
 
   public static DiscordMessage mapToDiscordMessage(String eventType, String payload) {
     try {
       JsonNode jsonNode = objectMapper.readTree(payload);
       String eventId = getEventId(eventType, jsonNode); // 고유 이벤트 ID 가져오기
 
+      // 이벤트 필터링: 외부 조건 확인
+      if (shouldFilterEvent(eventType, jsonNode)) {
+        return null; // 필터링된 이벤트는 무시
+      }
+
       // 중복 확인
       if (isDuplicate(eventType, jsonNode)) {
         return null; // 중복 이벤트는 무시
       }
 
-      String emoji = getEmoji(jsonNode);
-      DiscordMessage message = new DiscordMessage();
-      message.setContent(emoji + " **GitHub Webhook Event: " + eventType + "**");
-      message.setUsername("GitHub Webhook");
-      message.setAvatarUrl(getUserAvatarUrl(eventType, jsonNode));
-
-      DiscordMessage.Embed embed = new DiscordMessage.Embed();
-      embed.setTitle(emoji + " **Event: " + eventType + "**");
-      embed.setDescription(summarizeEvent(eventType, jsonNode));
-      embed.setColor(getEventColor(eventType));
-
-      message.setEmbeds(List.of(embed));
-      return message;
+      return buildDiscordMessage(eventType,
+          jsonNode);
     } catch (Exception e) {
       throw new RuntimeException("Failed to map payload to DiscordMessage", e);
     }
   }
+
+  private static DiscordMessage buildDiscordMessage(String eventType, JsonNode jsonNode) {
+    String emoji = getEmoji(jsonNode);
+    DiscordMessage message = new DiscordMessage();
+    message.setContent(emoji + " **GitHub Webhook Event: " + eventType + "**");
+    message.setUsername("GitHub Webhook");
+    message.setAvatarUrl(getUserAvatarUrl(eventType, jsonNode));
+
+    DiscordMessage.Embed embed = new DiscordMessage.Embed();
+    embed.setTitle(emoji + " **Event: " + eventType + "**");
+    embed.setDescription(summarizeEvent(eventType, jsonNode));
+    embed.setColor(getEventColor(eventType));
+
+    message.setEmbeds(List.of(embed));
+    return message;
+  }
+
+  private static boolean shouldFilterEvent(String eventType, JsonNode jsonNode) {
+    if (eventFilters.containsKey(eventType)) {
+      Map<String, String> conditions = eventFilters.get(eventType);
+      for (Map.Entry<String, String> entry : conditions.entrySet()) {
+        String key = entry.getKey();
+        String expectedValue = entry.getValue();
+        String actualValue = jsonNode.path(key).asText();
+
+        if (!"*".equals(expectedValue) && !expectedValue.equalsIgnoreCase(actualValue)) {
+          return true; // 조건에 맞지 않으면 필터링
+        }
+      }
+    }
+    return false; // 필터링하지 않음
+  }
+
 
   private static String getEmoji(JsonNode payload) {
     String status = payload.path("action").asText();
@@ -112,6 +146,8 @@ public class GitHubDiscordMessageMapper {
     return switch (eventType) {
       case "push" -> summarizePushEvent(node);
       case "pull_request" -> summarizePullRequestEvent(node);
+      case "pull_request_review" -> summarizePullRequestReviewEvent(node);
+      case "pull_request_review_comment" -> summarizePullRequestReviewCommentEvent(node);
       case "workflow_run" -> summarizeWorkflowEvent(node);
       case "check_suite" -> summarizeCheckSuiteEvent(node);
       case "release" -> summarizeReleaseEvent(node);
@@ -173,6 +209,27 @@ public class GitHubDiscordMessageMapper {
     return String.format("**Release**: %s%n**Tag**: %s%n**Author**: %s", name, tagName, author);
   }
 
+  private static String summarizePullRequestReviewEvent(JsonNode node) {
+    String state = node.path("pull_request_review").path("state").asText(); // 리뷰 상태
+    String user = node.path("pull_request_review").path("user").path("login").asText(); // 작성자
+    String url = node.path("pull_request_review").path("html_url").asText(); // 리뷰 URL
+
+    return String.format(
+        "**Review State**: %s%n**Author**: %s%n[Review Link](%s)",
+        state, user, url
+    );
+  }
+
+  private static String summarizePullRequestReviewCommentEvent(JsonNode node) {
+    String body = node.path("pull_request_review_comment").path("body").asText(); // 댓글 내용
+    String user = node.path("pull_request_review_comment").path("user").path("login").asText(); // 작성자
+    String url = node.path("pull_request_review_comment").path("html_url").asText(); // 댓글 URL
+
+    return String.format(
+        "**Comment**: %s%n**Author**: %s%n[Comment Link](%s)",
+        body, user, url
+    );
+  }
 
   private static String getUserAvatarUrl(String eventType, JsonNode node) {
     return switch (eventType) {
