@@ -53,8 +53,7 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        run: |
-          npm install semantic-release @semantic-release/git @semantic-release/github --save-dev
+        run: npm install
 
       - name: Set Up JDK 17
         uses: actions/setup-java@v4
