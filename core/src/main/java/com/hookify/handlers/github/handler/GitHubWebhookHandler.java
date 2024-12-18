@@ -23,7 +23,7 @@ public class GitHubWebhookHandler implements WebhookHandler {
         default -> logFileService.successLog(eventType, payload); // 기본 처리
       }
     } catch (Exception e) {
-      logger.error("Failed to handle event: {}", eventType);
+      logger.error("Failed to handle event:{}", eventType);
       logFileService.failedLog("error", payload);
     }
   }
