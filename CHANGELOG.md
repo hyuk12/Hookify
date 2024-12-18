@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/hyuk12/Hookify/compare/v1.3.0...v1.3.1) (2024-12-18)
+
+
+### Bug Fixes
+
+* discord processor add ([8b2c516](https://github.com/hyuk12/Hookify/commit/8b2c5160775cdb429ae13fff9ef88d99b13189a3))
+
 # [1.3.0](https://github.com/hyuk12/Hookify/compare/v1.2.12...v1.3.0) (2024-12-18)
 
 
