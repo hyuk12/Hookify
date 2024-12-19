@@ -1,6 +1,8 @@
 package com.hookify.handlers.discord.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hookify.mapper.github.GitHubDiscordMessageMapper;
+import java.util.List;
 import java.util.Objects;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -14,7 +16,7 @@ public class DiscordNotifier {
   private static final OkHttpClient client = new OkHttpClient();
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final Logger logger = LoggerFactory.getLogger(DiscordNotifier.class);
-
+  // 활성화된 이벤트 목록 가져오기
   public static void sendMessage(String webhookUrl, DiscordMessage message) {
     try {
       if (Objects.isNull(message) ||
