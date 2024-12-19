@@ -1,19 +1,2 @@
-hookify:
-  discord:
-    webhook:
-      url: https://discord.com/api/webhooks/1318759594281009192/At8FNIFyT4ZFYkF9W8T5OEVIqCj2P90dHS0RSO7IRBBXoC4A0KL6PO-gabVae6Vnn9zn
-  webhook:
-    secret: ACM+ZoVPpAeRzEVTzYfKlxYChb7DroCT11uTXw23to8=
-webhook:
-  enabledEvents:
-    - pull_request
-  filters:
-    pull_request:
-      action: "*"
-    pull_request_review:
-      state: "*"
-    pull_request_review_comment:
-      state: "*"
-
 
 
