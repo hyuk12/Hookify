@@ -1,4 +1,5 @@
 # Hookify
+[![codecov](https://codecov.io/github/hyuk12/Hookify/branch/main/graph/badge.svg?token=ZQ9J6UHUU3)](https://codecov.io/github/hyuk12/Hookify) <br>
 **Webhook 처리 라이브러리**
 다양한 플랫폼에서 Webhook 이벤트를 간편하게 관리하고 처리할 수 있는 라이브러리 입니다.</br>
 Slack, GitHub, 결제 시스템(Stripe, PayPal) 등 다양한 서비스와 통합 가능하며, Webhook 이벤트 검증,</br>
@@ -86,11 +87,6 @@ feat: Update WebhookValidator interface
 BREAKING CHANGE: validate() method now requires 'eventType' parameter
 
 ```
----
-
-## 📄 테스트 커버리지
-[![codecov](https://codecov.io/github/hyuk12/Hookify/graph/badge.svg?token=ZQ9J6UHUU3)](https://codecov.io/github/hyuk12/Hookify)
-
 ---
 
 ## 📦 설치 방법
