@@ -28,8 +28,16 @@ jobs:
         uses: gradle/gradle-build-action@v3
 
       - name: Run Tests
-        run: ./gradlew test
+        run: ./gradlew test jacocoTestReport
 
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # Codecov 토큰
+          files: build/reports/jacoco/test/jacocoTestReport.xml
+          flags: unittests
+          name: codecov-report
+          fail_ci_if_error: true
   # 2. 릴리즈 및 퍼블리싱 단계
   release:
     name: Release and Publish

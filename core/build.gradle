@@ -4,15 +4,6 @@ plugins {
     id 'jacoco'
 }
 
-jacocoTestReport {
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -41,3 +32,30 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.7'
 }
 
+jacoco {
+    toolVersion = "0.8.10" // 최신 버전으로 설정
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // 테스트 완료 후 리포트 생성
+}
+
+tasks.jacocoTestReport {
+    dependsOn test // 테스트 후 리포트 생성
+    reports {
+        xml.required.set(true) // XML 리포트 (CI에 업로드 가능)
+        html.required.set(true) // HTML 리포트
+        csv.required.set(false) // CSV 리포트 비활성화
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.6 // 커버리지 최소값 설정 (60%)
+            }
+        }
+    }
+}

@@ -77,4 +77,51 @@ class WebhookPipelineTest {
     assertDoesNotThrow(() -> pipeline.execute(eventType, signature, null, payload));
     verify(pipeline, times(1)).execute(eventType, signature, null, payload);
   }
+
+  @Test
+  void testWebhookPipeline_withEmptyPayload() {
+    // Arrange
+    String secret = "test-secret";
+    String eventType = "push";
+    String validSignature = "sha256=valid-signature";
+
+    WebhookPipeline pipeline = GitHubWebhookPipeline.create(secret);
+
+    // Act & Assert
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+      pipeline.execute(eventType, validSignature, null, "");
+    });
+
+    assertTrue(exception.getMessage().contains("Validation failed after"));
+  }
+
+  @Test
+  void testWebhookPipeline_withoutPostProcessors() throws Exception {
+    String secret = "test-secret";
+    String payload = "{ \"test\": \"payload\" }";
+    String validSignature = generateHmacSHA256(payload, secret);
+    WebhookPipeline pipeline = GitHubWebhookPipeline.create(secret);
+
+    assertDoesNotThrow(() -> pipeline.execute("push", validSignature, null, payload));
+  }
+
+  @Test
+  void testWebhookPipeline_withPostProcessorException() throws Exception {
+    String secret = "test-secret";
+    String payload = "{ \"test\": \"payload\" }";
+    String validSignature = generateHmacSHA256(payload, secret);
+
+    WebhookPipeline pipeline = GitHubWebhookPipeline.create(secret);
+    pipeline.addPostProcessor((eventType, payloadData) -> {
+      throw new RuntimeException("PostProcessor Error");
+    });
+
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+      pipeline.execute("push", validSignature, null, payload);
+    });
+
+    assertTrue(exception.getMessage().contains("PostProcessor Error"));
+  }
+
+
 }

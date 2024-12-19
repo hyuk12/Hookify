@@ -88,6 +88,10 @@ BREAKING CHANGE: validate() method now requires 'eventType' parameter
 ```
 ---
 
+## 📄 테스트 커버리지
+[![codecov](https://codecov.io/github/hyuk12/Hookify/graph/badge.svg?token=ZQ9J6UHUU3)](https://codecov.io/github/hyuk12/Hookify)
+
+---
 
 ## 📦 설치 방법
 #### 1. Gradle 설치 예제
