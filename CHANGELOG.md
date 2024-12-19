@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/hyuk12/Hookify/compare/v1.3.11...v1.4.0) (2024-12-19)
+
+
+### Features
+
+* discord 에 메시지를 넘길 때 yaml 에 표현된 event 와 filter만 처리하도록 변경. ([6f2a28c](https://github.com/hyuk12/Hookify/commit/6f2a28c0e29df8b7c97b579b1fedf72840730384))
+
 ## [1.3.11](https://github.com/hyuk12/Hookify/compare/v1.3.10...v1.3.11) (2024-12-18)
 
 
